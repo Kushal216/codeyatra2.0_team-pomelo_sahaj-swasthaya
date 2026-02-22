@@ -4,6 +4,10 @@ import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+export async function GET() {
+  return NextResponse.json({ message: 'Login page' }, { status: 200 });
+}
+
 export async function POST(req) {
   try {
     await connectDB();
