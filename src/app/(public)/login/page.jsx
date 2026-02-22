@@ -47,7 +47,7 @@ function Login() {
             required
           />
           <button className="w-full bg-blue-600 text-white p-2 rounded-xl">
-            Login
+            <Link href="/dashboard">Login</Link>
           </button>
           <p className="mt-4 text-sm text-center">
             Don,t have an account?{" "}
