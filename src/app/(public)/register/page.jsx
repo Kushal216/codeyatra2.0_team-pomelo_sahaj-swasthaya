@@ -10,7 +10,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     phone: "",
-    insured: false,
+    insured: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -124,9 +124,9 @@ export default function Register() {
           className="w-full p-2 mb-4 border rounded"
           type="text"
           placeholder="Health Insurance Number"
-          value={formData.insured ? "Yes" : ""}
+          value={formData.insured}
           onChange={(e) =>
-            setFormData({ ...formData, insured: !!e.target.value })
+            setFormData({ ...formData, insured:e.target.value })
           }
         />
 
