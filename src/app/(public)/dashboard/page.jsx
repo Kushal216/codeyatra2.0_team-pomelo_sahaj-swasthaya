@@ -132,15 +132,15 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar user={user} onLogout={logout} />
-      {user.role === 'staff' && (
+      {user.role === 'patient' && (
         <PatientDashboard
           user={user}
           tokenData={tokenData}
           createToken={createToken}
         />
       )}
-      {user.role === 'admin' && <StaffDashboard user={user} />}
-      {user.role === 'patient' && <AdminDashboard user={user} />}
+      {user.role === 'staff' && <StaffDashboard user={user} />}
+      {user.role === 'admin' && <AdminDashboard user={user} />}
     </div>
   );
 }
