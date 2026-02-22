@@ -1,5 +1,39 @@
+'use client'
 import React from 'react'
-
+const MOCK_PATIENTS = [
+  {
+    id: 'P001',
+    name: 'Ananya Sharma',
+    age: 32,
+    dept: 'Cardiology',
+    status: 'Waiting',
+    token: 'C-01',
+  },
+  {
+    id: 'P002',
+    name: 'Rakesh Verma',
+    age: 55,
+    dept: 'Orthopedics',
+    status: 'In Consultation',
+    token: 'O-02',
+  },
+  {
+    id: 'P003',
+    name: 'Seema Patel',
+    age: 28,
+    dept: 'Gynaecology',
+    status: 'Waiting',
+    token: 'G-03',
+  },
+  {
+    id: 'P004',
+    name: 'Mohan Das',
+    age: 61,
+    dept: 'Cardiology',
+    status: 'Done',
+    token: 'C-04',
+  },
+];
 function StaffDashboard({ user }) {
   return (
     <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
