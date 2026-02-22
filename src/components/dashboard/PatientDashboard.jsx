@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import TicketModal from '@/components/TicketModal';
-// import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Pill, Stethoscope, FileText, Syringe } from 'lucide-react';
 
 const MOCK_APPOINTMENTS = [
@@ -35,7 +35,7 @@ function PatientDashboard({ user }) {
     status: 'Confirmed',
   });
 
-  // const router = useRouter();
+  const router = useRouter();
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
