@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import User from '@/models/User';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
   try {
@@ -28,4 +28,8 @@ export async function POST(req) {
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ message: 'Register page' }, { status: 200 });
 }
