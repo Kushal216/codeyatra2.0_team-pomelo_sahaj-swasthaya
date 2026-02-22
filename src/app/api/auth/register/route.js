@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import User from '@/models/User';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 export async function POST(req) {
   try {
     await connectDB();
-    const { name, email, password, phone } = await req.json();
+    const { name, email, password, phone, insurance } = await req.json();
 
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -18,6 +18,7 @@ export async function POST(req) {
       email,
       password: hashedPassword,
       phone,
+      insurance: insurance || false,
     });
 
     return NextResponse.json(
