@@ -67,24 +67,24 @@ const MOCK_PATIENTS = [
 export default function DashboardPage() {
   const { user, logout, loading } = useAuth();
   const [tokenData, setTokenData] = useState(null);
-  const [loadingToken, setLoadingToken] = useState(true);
+  const [loadingToken, setLoadingToken] = useState(false);
   const router = useRouter();
 
-  const fetchToken = useCallback(async () => {
-    if (!user || user.role !== 'patient') {
-      setLoadingToken(false);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/token/my?userId=${user._id}`);
-      const data = await res.json();
-      if (data.data) setTokenData(data.data);
-    } catch (error) {
-      console.error('Failed to fetch token:', error);
-    } finally {
-      setLoadingToken(false);
-    }
-  }, [user]);
+  // const fetchToken = useCallback(async () => {
+  //   if (!user || user.role !== 'patient') {
+  //     setLoadingToken(false);
+  //     return;
+  //   }
+  //   try {
+  //     const res = await fetch(`/api/token/my?userId=${user._id}`);
+  //     const data = await res.json();
+  //     if (data.data) setTokenData(data.data);
+  //   } catch (error) {
+  //     console.error('Failed to fetch token:', error);
+  //   } finally {
+  //     setLoadingToken(false);
+  //   }
+  // }, [user]);
 
   // useEffect(() => {
   //   if (!loading && !user) {
@@ -126,6 +126,8 @@ export default function DashboardPage() {
     );
 
   if (!user) return null;
+
+  user.role == 'patient';
 
   return (
     <div className="min-h-screen bg-gray-50">

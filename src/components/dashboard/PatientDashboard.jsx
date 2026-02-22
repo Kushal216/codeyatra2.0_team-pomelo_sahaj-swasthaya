@@ -1,11 +1,41 @@
-import React from 'react'
-import TicketModal from '@/components/TicketModal'
+'use client';
+import React, { useState } from 'react';
+import TicketModal from '@/components/TicketModal';
+// import { useRouter } from 'next/router';
+import { Pill, Stethoscope, FileText, Syringe } from 'lucide-react';
 
+const MOCK_APPOINTMENTS = [
+  {
+    id: 'APT001',
+    dept: 'Cardiology',
+    doctor: 'Dr. Meena Rao',
+    date: '2026-02-25',
+    time: '10:30 AM',
+    token: 'C-14',
+    status: 'Confirmed',
+  },
+  {
+    id: 'APT002',
+    dept: 'Ophthalmology',
+    doctor: 'Dr. Ajay Sen',
+    date: '2026-03-02',
+    time: '11:00 AM',
+    token: 'O-07',
+    status: 'Confirmed',
+  },
+];
 function PatientDashboard({ user }) {
-  const [selectedApt, setSelectedApt] = useState<
-    (typeof MOCK_APPOINTMENTS)[0] | null
-  >(null);
-  const router = useRouter();
+  const [selectedApt, setSelectedApt] = useState({
+    id: 'APT001',
+    dept: 'Cardiology',
+    doctor: 'Dr. Meena Rao',
+    date: '2026-02-25',
+    time: '10:30 AM',
+    token: 'C-14',
+    status: 'Confirmed',
+  });
+
+  // const router = useRouter();
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
@@ -95,14 +125,12 @@ function PatientDashboard({ user }) {
 
       {/* Health info cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {(
-          [
-            { Icon: Pill, label: 'Active Prescriptions', val: '2' },
-            { Icon: Stethoscope, label: 'Last Visit', val: 'Jan 12' },
-            { Icon: FileText, label: 'Lab Reports', val: '3' },
-            { Icon: Syringe, label: 'Vaccinations', val: 'Up to date' },
-          ]
-        ).map(({ Icon, label, val }) => (
+        {[
+          { Icon: Pill, label: 'Active Prescriptions', val: '2' },
+          { Icon: Stethoscope, label: 'Last Visit', val: 'Jan 12' },
+          { Icon: FileText, label: 'Lab Reports', val: '3' },
+          { Icon: Syringe, label: 'Vaccinations', val: 'Up to date' },
+        ].map(({ Icon, label, val }) => (
           <div
             key={label}
             className="card text-center flex flex-col items-center gap-1"
@@ -114,11 +142,11 @@ function PatientDashboard({ user }) {
         ))}
       </div>
 
-      {selectedApt && (
+      {/* {selectedApt && (
         <TicketModal apt={selectedApt} onClose={() => setSelectedApt(null)} />
-      )}
+      )} */}
     </main>
   );
 }
 
-export default PatientDashboard
+export default PatientDashboard;
