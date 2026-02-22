@@ -7,9 +7,12 @@ const QueueTokenSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   
   
-  appointmentTime: { type: Date, required: true }, // Selected slot time
-  missedCount: { type: Number, default: 0 },       // Tracks strikes (0 to 3)
-  isCheckedIn: { type: Boolean, default: false },  // Did they arrive?
+  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
+  doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  
+  appointmentTime: { type: Date, required: true },
+  missedCount: { type: Number, default: 0 },
+  isCheckedIn: { type: Boolean, default: false },
   
   stage: { 
     type: String, 

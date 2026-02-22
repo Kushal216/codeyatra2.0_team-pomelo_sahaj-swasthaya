@@ -7,25 +7,26 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const dateStr = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    const doctorId = searchParams.get('doctorId');
 
-    // Convert date string to start/end of day for query
+    if (!doctorId) return NextResponse.json({ error: 'Doctor ID required' }, { status: 400 });
+
     const startOfDay = new Date(`${dateStr}T00:00:00`);
     const endOfDay = new Date(`${dateStr}T23:59:59`);
 
-    // Generate slots (10:00 AM to 5:00 PM, 15 min intervals)
     const slots = [];
     const startHour = 10;
-    const endHour = 17; // 5 PM
+    const endHour = 17;
 
     for (let h = startHour; h < endHour; h++) {
       for (let m = 0; m < 60; m += 15) {
-        // Skip Break Time (12:00 PM - 1:00 PM)
-        if (h === 12) continue;
+        if (h === 12) continue; // Skip break
 
         const slotTime = new Date(`${dateStr}T${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`);
         
-        // Count bookings for this exact slot
+        // Count bookings for THIS DOCTOR at this time
         const count = await QueueToken.countDocuments({
+          doctor: doctorId,
           appointmentTime: slotTime,
           status: { $nin: ['Completed', 'Cancelled'] }
         });

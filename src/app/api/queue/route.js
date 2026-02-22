@@ -11,13 +11,15 @@ export async function GET(req) {
   try {
     await connectDB();
     
-    // 1. Run Penalty Logic First
+    // 1. Run Penalty Logic
     await processPenalties();
 
-    // 2. Fetch Active Queue
+    // 2. Fetch Active Queue (Populate Dept & Doctor)
     const queue = await QueueToken.find({ status: { $nin: ['Completed', 'Cancelled'] } })
       .populate('userId', 'name insured')
-      .sort({ appointmentTime: 1 }); // Sort by appointment time
+      .populate('department', 'name')
+      .populate('doctor', 'name')
+      .sort({ appointmentTime: 1 });
       
     return NextResponse.json({ success: true, queue });
   } catch (error) {

@@ -1,26 +1,32 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import QueueToken from '@/models/QueueToken';
+import Doctor from '@/models/Doctor';
 
 export async function POST(req) {
   try {
     await connectDB();
-    const { patientName, phone, userId, appointmentTime } = await req.json();
+    const { patientName, phone, userId, appointmentTime, department, doctor } = await req.json();
 
-    if (!appointmentTime) {
-      return NextResponse.json({ error: 'Appointment time required' }, { status: 400 });
+    if (!appointmentTime || !department || !doctor) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Validate Doctor exists and is active
+    const doctorDoc = await Doctor.findOne({ _id: doctor, isActive: true });
+    if (!doctorDoc) return NextResponse.json({ error: 'Invalid doctor' }, { status: 400 });
 
     const slotDate = new Date(appointmentTime);
     const hour = slotDate.getHours();
 
-    // 1. Validate Break Time (12:00 PM - 1:00 PM)
+    // Validate Break Time
     if (hour === 12) {
       return NextResponse.json({ error: 'Slot unavailable during break (12-1 PM)' }, { status: 400 });
     }
 
-    // 2. Validate Slot Capacity (Max 3 per slot)
+    // Validate Slot Capacity (Max 3 per DOCTOR per slot)
     const slotCount = await QueueToken.countDocuments({
+      doctor: doctor,
       appointmentTime: slotDate,
       status: { $nin: ['Completed', 'Cancelled'] }
     });
@@ -29,13 +35,12 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Slot full, please choose another time' }, { status: 400 });
     }
 
-    // 3. Prevent duplicate active tokens for logged-in users
+    // Prevent duplicate active tokens
     if (userId) {
       const activeToken = await QueueToken.findOne({ userId, status: { $nin: ['Completed', 'Cancelled'] } });
       if (activeToken) return NextResponse.json({ error: 'Active token exists', token: activeToken }, { status: 400 });
     }
 
-    // 4. Auto-increment token number
     const lastToken = await QueueToken.findOne().sort({ tokenNumber: -1 });
     const newTokenNumber = lastToken ? lastToken.tokenNumber + 1 : 1;
 
@@ -44,6 +49,8 @@ export async function POST(req) {
       tokenNumber: newTokenNumber,
       patientName,
       phone,
+      department,
+      doctor,
       appointmentTime: slotDate,
       missedCount: 0,
       isCheckedIn: false,
