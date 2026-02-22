@@ -18,7 +18,7 @@ export async function POST(req) {
       email,
       password: hashedPassword,
       phone,
-      insurance: insurance || false,
+      insurance: insurance || '',
     });
 
     return NextResponse.json(
