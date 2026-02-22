@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-
+import { useAuth } from "@/lib/context";
 import Link from "next/link";
 
 export default function Register() {
@@ -9,8 +9,9 @@ export default function Register() {
     email: "",
     password: "",
     phone: "",
-    insured: "",
+    insured: false,
   });
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +20,11 @@ export default function Register() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
+    const data = await res.json();
+    if (data.success) {
+      alert("Registered! Please login.");
+      window.location.href = "/login";
+    } else alert(data.error);
   };
 
   return (

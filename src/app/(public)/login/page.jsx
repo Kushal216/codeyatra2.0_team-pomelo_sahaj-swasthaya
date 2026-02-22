@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/context";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +50,7 @@ function Login() {
             Login
           </button>
           <p className="mt-4 text-sm text-center">
-            Don,t have an account? {" "}
+            Don,t have an account?{" "}
             <Link href="/register" className="text-blue-500 ">
               Register
             </Link>
