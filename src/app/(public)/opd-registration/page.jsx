@@ -3,7 +3,13 @@ import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context';
 import Navbar from '@/components/Navbar';
-import { ChevronLeft, CalendarDays, Stethoscope, Clock, CheckCircle2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  CalendarDays,
+  Stethoscope,
+  Clock,
+  CheckCircle2,
+} from 'lucide-react';
 
 const useIsClient = () =>
   useSyncExternalStore(
@@ -127,13 +133,25 @@ export default function OpdRegistrationPage() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 size={32} className="text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Appointment Booked!</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Appointment Booked!
+          </h2>
           <p className="text-gray-500 text-sm">
-            Your slot with <span className="font-medium text-gray-700">Dr. {selectedDoctor.name}</span> at{' '}
-            <span className="font-medium text-gray-700">{selectedSlot.display}</span> on{' '}
-            <span className="font-medium text-gray-700">{selectedDate}</span> has been confirmed.
+            Your slot with{' '}
+            <span className="font-medium text-gray-700">
+              Dr. {selectedDoctor.name}
+            </span>{' '}
+            at{' '}
+            <span className="font-medium text-gray-700">
+              {selectedSlot.display}
+            </span>{' '}
+            on <span className="font-medium text-gray-700">{selectedDate}</span>{' '}
+            has been confirmed.
           </p>
-          <button onClick={() => router.push('/dashboard')} className="btn-primary w-full">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="btn-primary w-full"
+          >
             Back to Dashboard
           </button>
         </div>
@@ -149,14 +167,20 @@ export default function OpdRegistrationPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => (step > 0 ? setStep(step - 1) : router.push('/dashboard'))}
+            onClick={() =>
+              step > 0 ? setStep(step - 1) : router.push('/dashboard')
+            }
             className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 -ml-1"
           >
             <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Book Appointment</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Step {step + 1} of {STEPS.length} — {STEPS[step]}</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Book Appointment
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Step {step + 1} of {STEPS.length} — {STEPS[step]}
+            </p>
           </div>
         </div>
 
@@ -181,14 +205,21 @@ export default function OpdRegistrationPage() {
         {/* Step 0 — Department */}
         {step === 0 && (
           <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-700">Select a department</p>
+            <p className="text-sm font-medium text-gray-700">
+              Select a department
+            </p>
             {deptLoading ? (
-              <div className="text-sm text-gray-400 py-8 text-center">Loading departments…</div>
+              <div className="text-sm text-gray-400 py-8 text-center">
+                Loading departments…
+              </div>
             ) : (
               departments.map((d) => (
                 <button
                   key={d._id}
-                  onClick={() => { setSelectedDept(d); setStep(1); }}
+                  onClick={() => {
+                    setSelectedDept(d);
+                    setStep(1);
+                  }}
                   className="w-full card text-left flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
                 >
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
@@ -205,17 +236,25 @@ export default function OpdRegistrationPage() {
         {step === 1 && (
           <div className="space-y-3">
             <p className="text-sm font-medium text-gray-700">
-              Select a doctor in <span className="text-blue-700">{selectedDept?.name}</span>
+              Select a doctor in{' '}
+              <span className="text-blue-700">{selectedDept?.name}</span>
             </p>
             {doctorLoading ? (
-              <div className="text-sm text-gray-400 py-8 text-center">Loading doctors…</div>
+              <div className="text-sm text-gray-400 py-8 text-center">
+                Loading doctors…
+              </div>
             ) : doctors.length === 0 ? (
-              <div className="card text-center py-10 text-gray-400 text-sm">No doctors available in this department.</div>
+              <div className="card text-center py-10 text-gray-400 text-sm">
+                No doctors available in this department.
+              </div>
             ) : (
               doctors.map((d) => (
                 <button
                   key={d._id}
-                  onClick={() => { setSelectedDoctor(d); setStep(2); }}
+                  onClick={() => {
+                    setSelectedDoctor(d);
+                    setStep(2);
+                  }}
                   className="w-full card text-left flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
                 >
                   <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
@@ -223,7 +262,11 @@ export default function OpdRegistrationPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-800">Dr. {d.name}</p>
-                    {d.specialization && <p className="text-xs text-gray-400">{d.specialization}</p>}
+                    {d.specialization && (
+                      <p className="text-xs text-gray-400">
+                        {d.specialization}
+                      </p>
+                    )}
                   </div>
                 </button>
               ))
@@ -248,9 +291,13 @@ export default function OpdRegistrationPage() {
             <div className="space-y-2">
               <p className="label">Available Slots</p>
               {slotLoading ? (
-                <div className="text-sm text-gray-400 py-6 text-center">Loading slots…</div>
+                <div className="text-sm text-gray-400 py-6 text-center">
+                  Loading slots…
+                </div>
               ) : slots.length === 0 ? (
-                <div className="card text-center py-8 text-gray-400 text-sm">No slots found for this date.</div>
+                <div className="card text-center py-8 text-gray-400 text-sm">
+                  No slots found for this date.
+                </div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {slots.map((s) => (
@@ -262,8 +309,8 @@ export default function OpdRegistrationPage() {
                         selectedSlot?.time === s.time
                           ? 'bg-blue-600 text-white border-blue-600'
                           : s.available
-                          ? 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                          : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                            ? 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                            : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
                       }`}
                     >
                       <Clock size={11} className="inline mr-1 -mt-0.5" />
@@ -320,4 +367,3 @@ export default function OpdRegistrationPage() {
     </div>
   );
 }
-
