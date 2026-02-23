@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get('_id');
 
     if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 });
 
