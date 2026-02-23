@@ -1,23 +1,50 @@
-"use client";
-import React, { useState, useEffect, useCallback } from "react";
-import { RefreshCw, ClipboardList } from "lucide-react";
-import PrescriptionForm from "./PrescriptionForm";
+'use client';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { RefreshCw, ClipboardList, Building2, UserRound } from 'lucide-react';
+import PrescriptionForm from './PrescriptionForm';
 
-const TABS = ["Queue", "Write Prescription"];
+const TABS = ['Queue', 'Write Prescription'];
+const ALL = 'All';
 
 function StatusBadge({ status }) {
   const styles = {
-    Waiting: "bg-yellow-100 text-yellow-700",
-    InProgress: "bg-blue-100 text-blue-700",
-    Completed: "bg-green-100 text-green-700",
-    Cancelled: "bg-red-100 text-red-700",
+    Waiting: 'bg-yellow-100 text-yellow-700',
+    InProgress: 'bg-blue-100 text-blue-700',
+    Completed: 'bg-green-100 text-green-700',
+    Cancelled: 'bg-red-100 text-red-700',
   };
   return (
     <span
-      className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${styles[status] ?? "bg-gray-100 text-gray-600"}`}
+      className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${styles[status] ?? 'bg-gray-100 text-gray-600'}`}
     >
       {status}
     </span>
+  );
+}
+
+function FilterPills({ label, icon: Icon, options, selected, onSelect }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <Icon size={12} />
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {[ALL, ...options].map((opt) => (
+          <button
+            key={opt}
+            onClick={() => onSelect(opt)}
+            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+              selected === opt
+                ? 'bg-teal-600 text-white border-teal-600'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-teal-400 hover:text-teal-700'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -29,13 +56,13 @@ function QueueRow({ token, onPrescribe }) {
           {token.patientName}
         </p>
         <p className="text-xs text-gray-400">
-          {token.department?.name ?? "—"} · Dr. {token.doctor?.name ?? "—"} ·{" "}
+          {token.department?.name ?? '—'} · Dr. {token.doctor?.name ?? '—'} ·{' '}
           Token #{token.tokenNumber}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <StatusBadge status={token.status} />
-        {(token.status === "Waiting" || token.status === "InProgress") && (
+        {(token.status === 'Waiting' || token.status === 'InProgress') && (
           <button
             onClick={() => onPrescribe(token)}
             className="flex items-center gap-1 text-xs text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1.5 rounded-lg hover:bg-teal-100 transition font-medium"
@@ -53,9 +80,9 @@ function StatsRow({ tokens }) {
   const count = (status) => tokens.filter((t) => t.status === status).length;
   const stats = [
     { label: "Today's OPD", val: tokens.length },
-    { label: "Waiting", val: count("Waiting") },
-    { label: "In Progress", val: count("InProgress") },
-    { label: "Completed", val: count("Completed") },
+    { label: 'Waiting', val: count('Waiting') },
+    { label: 'In Progress', val: count('InProgress') },
+    { label: 'Completed', val: count('Completed') },
   ];
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -70,37 +97,81 @@ function StatsRow({ tokens }) {
 }
 
 function StaffDashboard({ user }) {
-  const [activeTab, setActiveTab] = useState("Queue");
+  const [activeTab, setActiveTab] = useState('Queue');
   const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [rxPrefill, setRxPrefill] = useState(null); // pre-fill data for PrescriptionForm
+
+  // Filter state
+  const [selectedDept, setSelectedDept] = useState(ALL);
+  const [selectedDoctor, setSelectedDoctor] = useState(ALL);
+
+  // Derived unique departments from fetched tokens
+  const departments = useMemo(() => {
+    const seen = new Set();
+    return tokens
+      .map((t) => t.department?.name)
+      .filter((name) => name && !seen.has(name) && seen.add(name));
+  }, [tokens]);
+
+  // Doctors belonging to the selected department
+  const doctorsInDept = useMemo(() => {
+    const base =
+      selectedDept === ALL
+        ? tokens
+        : tokens.filter((t) => t.department?.name === selectedDept);
+    const seen = new Set();
+    return base
+      .map((t) => t.doctor?.name)
+      .filter((name) => name && !seen.has(name) && seen.add(name));
+  }, [tokens, selectedDept]);
+
+  // Reset doctor filter whenever department changes
+  const handleDeptSelect = (dept) => {
+    setSelectedDept(dept);
+    setSelectedDoctor(ALL);
+  };
+
+  // Final filtered token list
+  const filteredTokens = useMemo(() => {
+    return tokens.filter((t) => {
+      const deptMatch =
+        selectedDept === ALL || t.department?.name === selectedDept;
+      const doctorMatch =
+        selectedDoctor === ALL || t.doctor?.name === selectedDoctor;
+      return deptMatch && doctorMatch;
+    });
+  }, [tokens, selectedDept, selectedDoctor]);
 
   // When a queue row's Prescribe button is clicked
   const handlePrescribe = (token) => {
     setRxPrefill({
       tokenNumber: token.tokenNumber,
-      doctorName: token.doctor?.name ?? "",
-      department: token.department?.name ?? "",
-      patientName: token.patientName ?? "",
+      doctorName: token.doctor?.name ?? '',
+      department: token.department?.name ?? '',
+      patientName: token.patientName ?? '',
     });
-    setActiveTab("Write Prescription");
+    setActiveTab('Write Prescription');
   };
 
   const fetchQueue = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
-    setError("");
+    setError('');
 
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split('T')[0];
       const res = await fetch(`/api/token?date=${today}`);
       const data = await res.json();
 
       if (!res.ok || !data.success)
-        throw new Error(data.error || "Failed to load queue");
+        throw new Error(data.error || 'Failed to load queue');
       setTokens(data.tokens ?? []);
+      // Reset filters on full refresh
+      setSelectedDept(ALL);
+      setSelectedDoctor(ALL);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -120,7 +191,7 @@ function StaffDashboard({ user }) {
         <p className="text-xs text-gray-400">Staff Portal</p>
         <h2
           className="text-xl font-semibold"
-          style={{ fontFamily: "Fraunces,serif" }}
+          style={{ fontFamily: 'Fraunces,serif' }}
         >
           {user.name}
         </h2>
@@ -135,8 +206,8 @@ function StaffDashboard({ user }) {
             onClick={() => setActiveTab(tab)}
             className={`flex-1 text-sm py-2 rounded-md font-medium transition-colors ${
               activeTab === tab
-                ? "bg-white text-teal-700 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? 'bg-white text-teal-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {tab}
@@ -144,15 +215,42 @@ function StaffDashboard({ user }) {
         ))}
       </div>
 
-      {activeTab === "Queue" && (
+      {activeTab === 'Queue' && (
         <>
-          {/* Stats — always show even while loading */}
+          {/* Stats — always show even while loading (based on full list) */}
           {!loading && !error && <StatsRow tokens={tokens} />}
+
+          {/* Department + Doctor filters */}
+          {!loading && !error && tokens.length > 0 && (
+            <div className="card space-y-3">
+              <FilterPills
+                label="Department"
+                icon={Building2}
+                options={departments}
+                selected={selectedDept}
+                onSelect={handleDeptSelect}
+              />
+              {doctorsInDept.length > 0 && (
+                <FilterPills
+                  label="Doctor"
+                  icon={UserRound}
+                  options={doctorsInDept}
+                  selected={selectedDoctor}
+                  onSelect={setSelectedDoctor}
+                />
+              )}
+            </div>
+          )}
 
           {/* Queue header + refresh */}
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-gray-800">
               Today&apos;s Patient Queue
+              {(selectedDept !== ALL || selectedDoctor !== ALL) && (
+                <span className="ml-2 text-xs font-normal text-teal-600">
+                  {filteredTokens.length} shown
+                </span>
+              )}
             </h3>
             <button
               onClick={() => fetchQueue({ silent: true })}
@@ -161,9 +259,9 @@ function StaffDashboard({ user }) {
             >
               <RefreshCw
                 size={13}
-                className={refreshing ? "animate-spin" : ""}
+                className={refreshing ? 'animate-spin' : ''}
               />
-              {refreshing ? "Refreshing…" : "Refresh"}
+              {refreshing ? 'Refreshing…' : 'Refresh'}
             </button>
           </div>
 
@@ -187,17 +285,27 @@ function StaffDashboard({ user }) {
             </div>
           )}
 
-          {/* Empty */}
+          {/* Empty (no tokens at all today) */}
           {!loading && !error && tokens.length === 0 && (
             <div className="card text-center py-10 text-gray-400 text-sm">
               No patients in the queue today.
             </div>
           )}
 
+          {/* Empty after filtering */}
+          {!loading &&
+            !error &&
+            tokens.length > 0 &&
+            filteredTokens.length === 0 && (
+              <div className="card text-center py-10 text-gray-400 text-sm">
+                No patients match the selected filters.
+              </div>
+            )}
+
           {/* Token rows */}
-          {!loading && !error && tokens.length > 0 && (
+          {!loading && !error && filteredTokens.length > 0 && (
             <div className="space-y-2">
-              {tokens.map((t) => (
+              {filteredTokens.map((t) => (
                 <QueueRow key={t._id} token={t} onPrescribe={handlePrescribe} />
               ))}
             </div>
@@ -205,7 +313,7 @@ function StaffDashboard({ user }) {
         </>
       )}
 
-      {activeTab === "Write Prescription" && (
+      {activeTab === 'Write Prescription' && (
         <PrescriptionForm prefill={rxPrefill} />
       )}
     </main>
