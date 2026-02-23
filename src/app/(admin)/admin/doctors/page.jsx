@@ -24,8 +24,20 @@ const Doctors = () => {
   }, []);
 
   const handleAddDoctor = async (form) => {
-    // TODO: Implement doctor creation API call
-    alert(JSON.stringify(form, null, 2));
+    try {
+      const res = await fetch("/api/admin/doctors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to create doctor");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to create doctor");
+    }
   };
 
   if (loading) return <div>Loading departments...</div>;
