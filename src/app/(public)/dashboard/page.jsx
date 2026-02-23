@@ -32,7 +32,7 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100">
       {/* Subtle Background Decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-100/50 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
@@ -42,18 +42,20 @@ export default function DashboardPage() {
       {/* Content Wrapper */}
       <div className="relative z-10">
         <Navbar user={user} onLogout={logout} />
-        
+
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          
           {/* Welcome Banner - Enhanced */}
           <div className="mb-10">
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                
                 {/* Left: User Info */}
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl ring-4 ring-blue-100">
-                    {user.role === 'patient' ? '👤' : user.role === 'staff' ? '🏥' : '⚙️'}
+                  <div className="w-16 h-16 bg-linear-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl ring-4 ring-blue-100">
+                    {user.role === 'patient'
+                      ? '👤'
+                      : user.role === 'staff'
+                        ? '🏥'
+                        : '⚙️'}
                   </div>
                   <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
@@ -67,11 +69,15 @@ export default function DashboardPage() {
 
                 {/* Right: Badges */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className={`px-4 py-2 rounded-full text-sm font-bold tracking-wide ${
-                    user.role === 'patient' ? 'bg-blue-100 text-blue-800' :
-                    user.role === 'staff' ? 'bg-green-100 text-green-800' :
-                    'bg-purple-100 text-purple-800'
-                  }`}>
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-bold tracking-wide ${
+                      user.role === 'patient'
+                        ? 'bg-blue-100 text-blue-800'
+                        : user.role === 'staff'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-purple-100 text-purple-800'
+                    }`}
+                  >
                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                   </span>
                   {user.insured && (
@@ -80,7 +86,11 @@ export default function DashboardPage() {
                     </span>
                   )}
                   <span className="px-4 py-2 rounded-full text-sm font-medium text-gray-600 bg-gray-100">
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {new Date().toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
               </div>
@@ -90,7 +100,7 @@ export default function DashboardPage() {
           {/* Role-Based Dashboard Container - Enhanced */}
           <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
             {/* Subtle header for the container */}
-            <div className="px-8 py-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+            <div className="px-8 py-5 bg-linear-to-r from-gray-50 to-white border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                 <p className="text-gray-700 font-semibold text-lg">
@@ -100,7 +110,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            
+
             {/* Dashboard Content with extra padding for readability */}
             <div className="p-6 md:p-8">
               {user.role === 'patient' && <PatientDashboard user={user} />}

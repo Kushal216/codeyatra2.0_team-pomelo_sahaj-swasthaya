@@ -50,13 +50,13 @@ export default function Navbar({ user, onLogout }) {
     <header className="bg-white/95 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 flex items-center justify-between">
-          
+
           {/* Logo */}
           <Link
             href={user ? "/dashboard" : "/"}
             className="flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover:shadow-xl transition-shadow duration-200">
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M10 3v14M3 10h14"
@@ -112,8 +112,8 @@ export default function Navbar({ user, onLogout }) {
                   Logout
                 </button>
               </nav>
-              <button 
-                className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors" 
+              <button
+                className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                 onClick={() => setOpen(!open)}
                 aria-label="Toggle menu"
               >
@@ -149,7 +149,7 @@ export default function Navbar({ user, onLogout }) {
               <div className="flex items-center gap-3">
                 {/* User info */}
                 <div className="hidden sm:flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold text-sm">
+                  <div className="w-9 h-9 bg-linear-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold text-sm">
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="text-right">
@@ -163,17 +163,17 @@ export default function Navbar({ user, onLogout }) {
                     </span>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 text-base font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200"
                 >
                   Logout
                 </button>
-                
+
                 {/* Mobile hamburger */}
-                <button 
-                  className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors" 
+                <button
+                  className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                   onClick={() => setOpen(!open)}
                   aria-label="Toggle menu"
                 >
@@ -213,7 +213,7 @@ export default function Navbar({ user, onLogout }) {
               {user ? (
                 <>
                   <div className="px-4 py-3 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold">
+                    <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold">
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>

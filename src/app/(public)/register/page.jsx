@@ -62,11 +62,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center px-4 py-8">
       {/* Register Card */}
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Header / Branding */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
           <div className="w-30 h-16 bg-white backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
             <Image
               src={'/logo.png'}
@@ -252,7 +252,7 @@ export default function Register() {
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-base py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-base py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
               loading || !agreeToTerms ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             disabled={loading || !agreeToTerms}
