@@ -1,35 +1,35 @@
-"use client";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden">
       {/* ==================== NAVIGATION ==================== */}
       <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}
+        className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="bg-linear-to-br from-blue-600 to-blue-800 text-white px-5 py-2.5 rounded-xl font-bold text-xl shadow-lg">
-                Sahaj Swasthya
-              </div>
+            <div className="relative w-32 h-12 flex items-center justify-center">
+              <Image
+                src={'/logo.png'}
+                alt="logo"
+                fill
+                className="object-contain"
+              />
             </div>
-
 
             {/* Auth Buttons */}
             <div className="hidden md:flex items-center space-x-4">
@@ -46,7 +46,6 @@ export default function Home() {
                 Get Started
               </Link>
             </div>
-
 
             {/* Mobile Menu Button */}
             <button
@@ -78,7 +77,6 @@ export default function Home() {
             </button>
           </div>
         </div>
-
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
@@ -113,17 +111,16 @@ export default function Home() {
         )}
       </nav>
 
-
       {/* ==================== HERO SECTION ==================== */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-                Comfortable and Fast{" "}
+                Comfortable and Fast{' '}
                 <span className="bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                   Healthcare
-                </span>{" "}
+                </span>{' '}
                 at Your Fingertips
               </h1>
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
@@ -147,7 +144,6 @@ export default function Home() {
               </div>
             </div>
 
-
             {/* Right: Hero Image/Illustration */}
             <div className="relative">
               <div className="bg-linear-to-br from-blue-500 to-blue-700 rounded-3xl p-8 shadow-2xl transform">
@@ -169,7 +165,6 @@ export default function Home() {
                     </div>
                   </div>
 
-
                   <div className="space-y-3">
                     <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                       <span className="text-gray-700">Token #105</span>
@@ -187,7 +182,6 @@ export default function Home() {
                     </div>
                   </div>
 
-
                   <div className="mt-6 bg-lineaer-to-r from-blue-600 to-blue-700 text-white text-center py-3 rounded-xl font-semibold">
                     Next Patient in 5 mins
                   </div>
@@ -197,7 +191,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
 
       {/* ==================== FEATURES SECTION ==================== */}
       <section id="features" className="py-20 bg-white">
@@ -210,7 +203,6 @@ export default function Home() {
               Everything you need for a seamless healthcare experience
             </p>
           </div>
-
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
@@ -258,7 +250,6 @@ export default function Home() {
               </Link>
             </div>
 
-
             {/* Feature 2 */}
             <div className="group bg-linear-to-br from-red-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition duration-300 border border-red-100">
               <div className="w-16 h-16 bg-linear-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
@@ -303,7 +294,6 @@ export default function Home() {
                 </svg>
               </Link>
             </div>
-
 
             {/* Feature 3 */}
             <div className="group bg-linear-to-br from-blue-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition duration-300 border border-blue-100">
@@ -353,7 +343,6 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* ==================== HOW IT WORKS ==================== */}
       <section
         id="how-it-works"
@@ -369,7 +358,6 @@ export default function Home() {
             </p>
           </div>
 
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Step 1 */}
             <div className="text-center">
@@ -384,7 +372,6 @@ export default function Home() {
               </p>
             </div>
 
-
             {/* Step 2 */}
             <div className="text-center">
               <div className="w-20 h-20 bg-linear-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-3xl font-bold shadow-lg">
@@ -397,7 +384,6 @@ export default function Home() {
                 Receive email updates about your token status and turn
               </p>
             </div>
-
 
             {/* Step 3 */}
             <div className="text-center">
@@ -414,7 +400,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
 
       {/* ==================== CTA SECTION ==================== */}
       <section className="py-20 bg-linear-to-r from-blue-600 via-blue-700 to-blue-900">
@@ -442,7 +427,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
 
       {/* ==================== FOOTER ==================== */}
       <footer className="bg-gray-900 text-white py-12">
@@ -527,6 +511,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-
