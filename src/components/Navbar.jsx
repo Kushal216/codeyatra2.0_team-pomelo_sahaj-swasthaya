@@ -1,11 +1,31 @@
-'use client';
-import Link from 'next/link';
-import { useState } from 'react';
+"use client";
+import Link from "next/link";
+import { useState } from "react";
 
 const PUBLIC_LINKS = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: "Home", href: "/dashboard" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
+const PATIENT_LINKS = [
+  { label: "Home", href: "/dashboard" },
+  { label: "Appointments", href: "/dashboard/appointments" },
+  { label: "Reports", href: "/dashboard/reports" },
+  { label: "About", href: "/about" },
+];
+
+const STAFF_LINKS = [
+  { label: "Dashboard", href: "/staff" },
+  { label: "Queue", href: "/staff" },
+  { label: "Prescriptions", href: "/staff" },
+];
+
+const ADMIN_LINKS = [
+  { label: "Dashboard", href: "/admin" },
+  { label: "Departments", href: "/admin/departments" },
+  { label: "Doctors", href: "/admin/doctors" },
+  { label: "Staff", href: "/admin/staff" },
 ];
 
 // ---- Navbar ----
@@ -14,25 +34,23 @@ export default function Navbar({ user, onLogout }) {
 
   function handleLogout() {
     setOpen(false);
-    if (typeof onLogout === 'function') onLogout();
+    if (typeof onLogout === "function") onLogout();
   }
 
   const navLinks =
-    user?.role === 'patient'
-      ? [
-          { label: 'Home', href: '/dashboard' },
-          { label: 'Appointments', href: '/dashboard/appointments' },
-          { label: 'Reports', href: '/dashboard/reports' },
-          { label: 'About', href: '/about' },
-          { label: 'Contact', href: '/contact' },
-        ]
-      : PUBLIC_LINKS;
+    user?.role === "patient"
+      ? PATIENT_LINKS
+      : user?.role === "staff"
+        ? STAFF_LINKS
+        : user?.role === "admin"
+          ? ADMIN_LINKS
+          : PUBLIC_LINKS;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link
-          href={user ? '/dashboard' : '/'}
+          href={user ? "/dashboard" : "/"}
           className="flex items-center gap-2"
         >
           <div className="w-7 h-7 bg-blue-700 rounded-md flex items-center justify-center shrink-0">
@@ -47,7 +65,7 @@ export default function Navbar({ user, onLogout }) {
           </div>
           <span
             className="font-bold text-blue-700 text-base"
-            style={{ fontFamily: 'Fraunces,serif' }}
+            style={{ fontFamily: "Fraunces,serif" }}
           >
             Sahaj Swasthya
           </span>
@@ -75,7 +93,7 @@ export default function Navbar({ user, onLogout }) {
         )}
 
         {/* Patient nav */}
-        {user?.role === 'patient' && (
+        {user?.role === "patient" && (
           <>
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((l) => (
@@ -118,27 +136,61 @@ export default function Navbar({ user, onLogout }) {
         )}
 
         {/* Staff / Admin nav */}
-        {user && user.role !== 'patient' && (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:block">
-              {user.name}
-            </span>
-            <span
-              className={`text-xs px-2 py-1 rounded-full font-medium ${
-                user.role === 'admin'
-                  ? 'bg-purple-100 text-purple-700'
-                  : 'bg-teal-100 text-teal-700'
-              }`}
-            >
-              {user.role === 'admin' ? 'Admin' : 'Staff'}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-red-600 font-medium hover:text-red-700"
-            >
-              Logout
-            </button>
-          </div>
+        {user && user.role !== "patient" && (
+          <>
+            <nav className="hidden md:flex items-center gap-5">
+              {navLinks.map((l) => (
+                <Link
+                  key={l.label}
+                  href={l.href}
+                  className="text-sm text-gray-600 hover:text-blue-700 font-medium"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500 hidden sm:block">
+                {user.name}
+              </span>
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  user.role === "admin"
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-teal-100 text-teal-700"
+                }`}
+              >
+                {user.role === "admin" ? "Admin" : "Staff"}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-red-600 font-medium hover:text-red-700"
+              >
+                Logout
+              </button>
+              {/* Mobile hamburger */}
+              <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  {open ? (
+                    <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+                  ) : (
+                    <>
+                      <path d="M3 12h18" />
+                      <path d="M3 6h18" />
+                      <path d="M3 18h18" />
+                    </>
+                  )}
+                </svg>
+              </button>
+            </div>
+          </>
         )}
       </div>
 

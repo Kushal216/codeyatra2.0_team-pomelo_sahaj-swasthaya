@@ -12,12 +12,14 @@ export async function GET(req) {
     const doctor = searchParams.get('doctor');
     const stage = searchParams.get('stage');
     const date = searchParams.get('date');
+    const tokenNumber = searchParams.get('tokenNumber');
 
     const filter = {};
     if (status) filter.status = status;
     if (department) filter.department = department;
     if (doctor) filter.doctor = doctor;
     if (stage) filter.stage = stage;
+    if (tokenNumber) filter.tokenNumber = Number(tokenNumber);
     if (date) {
       const start = new Date(date);
       const end = new Date(date);

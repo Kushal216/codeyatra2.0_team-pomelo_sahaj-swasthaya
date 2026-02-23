@@ -29,9 +29,13 @@ export async function GET(req) {
       resolvedId = user._id;
     }
 
+    const allStatus = searchParams.get('allStatus') === 'true';
+
+    const statusFilter = allStatus ? {} : { status: { $nin: ['Completed', 'Cancelled'] } };
+
     const token = await QueueToken.findOne({
       userId: resolvedId,
-      status: { $nin: ['Completed', 'Cancelled'] },
+      ...statusFilter,
     })
       .populate('department', 'name')
       .populate('doctor', 'name specialization')
