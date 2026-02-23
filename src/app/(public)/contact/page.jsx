@@ -80,25 +80,25 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100">
       <Navbar user={user} onLogout={logout} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-        
         {/* Page title - Enhanced */}
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
             Contact Us
           </h1>
           <p className="text-lg text-gray-600 mt-3 font-medium max-w-2xl mx-auto">
-            Get in touch with our affiliated hospital or reach a doctor directly.
+            Get in touch with our affiliated hospital or reach a doctor
+            directly.
           </p>
         </div>
 
         {/* Hospital info card - Enhanced */}
         <section className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
           <div className="flex items-start gap-5 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+            <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
               🏥
             </div>
             <div>
@@ -121,7 +121,9 @@ export default function ContactPage() {
             <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
               <Phone size={20} className="text-blue-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-base font-semibold text-gray-900">{HOSPITAL.phone}</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {HOSPITAL.phone}
+                </p>
                 <p className="text-sm text-red-600 font-semibold mt-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                   Emergency: {HOSPITAL.emergency}
@@ -157,7 +159,10 @@ export default function ContactPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {DOCTORS.map((doc) => (
-              <div key={doc.email} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
+              <div
+                key={doc.email}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200"
+              >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
                     <Stethoscope size={20} className="text-blue-700" />
@@ -191,7 +196,10 @@ export default function ContactPage() {
                     </a>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Clock3 size={18} className="shrink-0 text-gray-400 mt-0.5" />
+                    <Clock3
+                      size={18}
+                      className="shrink-0 text-gray-400 mt-0.5"
+                    />
                     <span className="leading-relaxed">{doc.hours}</span>
                   </div>
                 </div>
@@ -216,12 +224,16 @@ export default function ContactPage() {
                   Message sent successfully!
                 </p>
                 <p className="text-base text-green-700 mt-1.5 leading-relaxed">
-                  We&apos;ll get back to you within 1–2 business days. Thank you for reaching out.
+                  We&apos;ll get back to you within 1–2 business days. Thank you
+                  for reaching out.
                 </p>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 space-y-6"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-base font-semibold text-gray-700 mb-2.5">
@@ -244,7 +256,9 @@ export default function ContactPage() {
                     className="w-full px-5 py-4 border border-gray-200 rounded-xl text-base text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
                     placeholder="your.email@example.com"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -258,13 +272,15 @@ export default function ContactPage() {
                   rows={5}
                   placeholder="How can we help you today?"
                   value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, message: e.target.value })
+                  }
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+                className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
               >
                 <Send size={20} />
                 Send Message

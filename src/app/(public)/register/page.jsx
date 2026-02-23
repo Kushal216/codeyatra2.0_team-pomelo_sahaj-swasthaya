@@ -1,17 +1,18 @@
-"use client";
-import { useState } from "react";
-import { useAuth } from "@/lib/context";
-import Link from "next/link";
-import { User, Mail, Phone, Lock, IdCard, Hospital, Check } from "lucide-react";
+'use client';
+import { useState } from 'react';
+import { useAuth } from '@/lib/context';
+import Link from 'next/link';
+import { User, Mail, Phone, Lock, IdCard, Hospital, Check } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    insured: "", // Kept as 'insured' for backend compatibility, labeled as NID in UI
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    insured: '', // Kept as 'insured' for backend compatibility, labeled as NID in UI
   });
 
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -22,20 +23,20 @@ export default function Register() {
     e.preventDefault();
 
     if (!agreeToTerms) {
-      alert("You must agree to the terms and conditions to register.");
+      alert('You must agree to the terms and conditions to register.');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      alert('Passwords do not match');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -47,28 +48,32 @@ export default function Register() {
 
       const data = await res.json();
       if (data.success) {
-        alert("Registered! Please login.");
-        window.location.href = "/login";
+        alert('Registered! Please login.');
+        window.location.href = '/login';
       } else {
-        alert(data.error || "Registration failed");
+        alert(data.error || 'Registration failed');
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong!");
+      alert('Something went wrong!');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-blue-50 to-gray-100 flex items-center justify-center px-4 py-8">
       {/* Register Card */}
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-        
         {/* Header / Branding */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Hospital size={32} className="text-white" />
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
+          <div className="w-30 h-16 bg-white backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Image
+              src={'/logo.png'}
+              alt="logo"
+              fill
+              className="text-white object-contain"
+            />
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
             Create Account
@@ -80,7 +85,6 @@ export default function Register() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          
           {/* Name Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
