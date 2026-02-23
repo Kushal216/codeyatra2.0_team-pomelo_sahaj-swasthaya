@@ -17,7 +17,7 @@ export default function Navbar({ user, onLogout }) {
     user.role === 'patient'
       ? [
           { label: 'Home', href: '/dashboard' },
-          { label: 'Appointments', href: '#' },
+          { label: 'Appointments', href: '/dashboard/appointments' },
           { label: 'Reports', href: '/dashboard/reports' },
           { label: 'About', href: '#' },
           { label: 'Contact', href: '#' },

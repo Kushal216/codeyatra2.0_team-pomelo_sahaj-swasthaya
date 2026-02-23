@@ -83,6 +83,12 @@ function PatientDashboard({ user }) {
           Book an Appointment
         </button>
         <button
+          onClick={() => router.push('/dashboard/appointments')}
+          className="btn-secondary flex-1 text-center"
+        >
+          My Appointments
+        </button>
+        <button
           onClick={() => router.push('/dashboard/reports')}
           className="btn-secondary flex-1 text-center"
         >
