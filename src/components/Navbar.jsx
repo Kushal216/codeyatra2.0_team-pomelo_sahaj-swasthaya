@@ -47,137 +47,77 @@ export default function Navbar({ user, onLogout }) {
           : PUBLIC_LINKS;
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link
-          href={user ? "/dashboard" : "/"}
-          className="flex items-center gap-2"
-        >
-          <div className="w-7 h-7 bg-blue-700 rounded-md flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M10 3v14M3 10h14"
-                stroke="white"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <span
-            className="font-bold text-blue-700 text-base"
-            style={{ fontFamily: "Fraunces,serif" }}
+    <header className="bg-white/95 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-16 flex items-center justify-between">
+          
+          {/* Logo */}
+          <Link
+            href={user ? "/dashboard" : "/"}
+            className="flex items-center gap-3 group"
           >
-            Sahaj Swasthya
-          </span>
-        </Link>
-
-        {/* No user — public nav */}
-        {!user && (
-          <nav className="hidden md:flex items-center gap-6">
-            {PUBLIC_LINKS.map((l) => (
-              <Link
-                key={l.label}
-                href={l.href}
-                className="text-sm text-gray-600 hover:text-blue-700 font-medium"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <Link
-              href="/login"
-              className="text-sm text-blue-700 font-medium hover:text-blue-800"
-            >
-              Login
-            </Link>
-          </nav>
-        )}
-
-        {/* Patient nav */}
-        {user?.role === "patient" && (
-          <>
-            <nav className="hidden md:flex items-center gap-6">
-              {navLinks.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  className="text-sm text-gray-600 hover:text-blue-700 font-medium"
-                >
-                  {l.label}
-                </Link>
-              ))}
-              <button
-                onClick={handleLogout}
-                className="text-sm text-red-600 font-medium hover:text-red-700"
-              >
-                Logout
-              </button>
-            </nav>
-            <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                {open ? (
-                  <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
-                ) : (
-                  <>
-                    <path d="M3 12h18" />
-                    <path d="M3 6h18" />
-                    <path d="M3 18h18" />
-                  </>
-                )}
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 3v14M3 10h14"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
               </svg>
-            </button>
-          </>
-        )}
+            </div>
+            <span className="font-extrabold text-blue-700 text-xl tracking-tight">
+              Sahaj Swasthya
+            </span>
+          </Link>
 
-        {/* Staff / Admin nav */}
-        {user && user.role !== "patient" && (
-          <>
-            <nav className="hidden md:flex items-center gap-5">
-              {navLinks.map((l) => (
+          {/* No user — public nav */}
+          {!user && (
+            <nav className="hidden md:flex items-center gap-1">
+              {PUBLIC_LINKS.map((l) => (
                 <Link
                   key={l.label}
                   href={l.href}
-                  className="text-sm text-gray-600 hover:text-blue-700 font-medium"
+                  className="px-4 py-2 text-base font-medium text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
                 >
                   {l.label}
                 </Link>
               ))}
+              <Link
+                href="/login"
+                className="ml-2 px-5 py-2.5 text-base font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200"
+              >
+                Login
+              </Link>
             </nav>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500 hidden sm:block">
-                {user.name}
-              </span>
-              <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  user.role === "admin"
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-teal-100 text-teal-700"
-                }`}
-              >
-                {user.role === "admin" ? "Admin" : "Staff"}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-sm text-red-600 font-medium hover:text-red-700"
-              >
-                Logout
-              </button>
-              {/* Mobile hamburger */}
-              <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+          )}
+
+          {/* Patient nav */}
+          {user?.role === "patient" && (
+            <>
+              <nav className="hidden md:flex items-center gap-1">
+                {navLinks.map((l) => (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    className="px-4 py-2 text-base font-medium text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="ml-2 px-5 py-2.5 text-base font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200"
                 >
+                  Logout
+                </button>
+              </nav>
+              <button 
+                className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors" 
+                onClick={() => setOpen(!open)}
+                aria-label="Toggle menu"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   {open ? (
                     <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
                   ) : (
@@ -189,40 +129,122 @@ export default function Navbar({ user, onLogout }) {
                   )}
                 </svg>
               </button>
-            </div>
-          </>
-        )}
+            </>
+          )}
+
+          {/* Staff / Admin nav */}
+          {user && user.role !== "patient" && (
+            <>
+              <nav className="hidden md:flex items-center gap-1">
+                {navLinks.map((l) => (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    className="px-4 py-2 text-base font-medium text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex items-center gap-3">
+                {/* User info */}
+                <div className="hidden sm:flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold text-sm">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-semibold text-gray-900 leading-tight">{user.name}</p>
+                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-lg ${
+                      user.role === "admin"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-teal-100 text-teal-700"
+                    }`}>
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-base font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200"
+                >
+                  Logout
+                </button>
+                
+                {/* Mobile hamburger */}
+                <button 
+                  className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors" 
+                  onClick={() => setOpen(!open)}
+                  aria-label="Toggle menu"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    {open ? (
+                      <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+                    ) : (
+                      <>
+                        <path d="M3 12h18" />
+                        <path d="M3 6h18" />
+                        <path d="M3 18h18" />
+                      </>
+                    )}
+                  </svg>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu - Enhanced */}
       {open && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-3">
-          {navLinks.map((l) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="block text-sm text-gray-700 font-medium py-1"
-            >
-              {l.label}
-            </Link>
-          ))}
-          {user ? (
-            <button
-              onClick={handleLogout}
-              className="block text-sm text-red-600 font-medium py-1"
-            >
-              Logout
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="block text-sm text-blue-700 font-medium py-1"
-            >
-              Login
-            </Link>
-          )}
+        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+          <div className="px-4 py-4 space-y-1">
+            {navLinks.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200"
+              >
+                {l.label}
+              </Link>
+            ))}
+            <div className="pt-2 mt-2 border-t border-gray-100">
+              {user ? (
+                <>
+                  <div className="px-4 py-3 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-700 font-bold">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-gray-900">{user.name}</p>
+                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-lg ${
+                        user.role === "admin"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-teal-100 text-teal-700"
+                      }`}>
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full mt-2 px-4 py-3 text-base font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 text-left"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="block px-4 py-3 text-base font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-200"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </header>
