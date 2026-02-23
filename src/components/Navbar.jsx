@@ -1,23 +1,27 @@
-"use client"
-// import { useRouter } from 'next/router';
-import { useState } from 'react'
+'use client';
+import Link from 'next/link';
+import { useState } from 'react';
 
 // ---- Navbar ----
 export default function Navbar({ user, onLogout }) {
   const [open, setOpen] = useState(false);
-  // const router = useRouter();
 
   function handleLogout() {
     setOpen(false);
     if (typeof onLogout === 'function') {
       onLogout();
     }
-    // router.push('/login');
   }
 
   const navLinks =
     user.role === 'patient'
-      ? ['Home', 'Appointments', 'Reports', 'About', 'Contact']
+      ? [
+          { label: 'Home', href: '/dashboard' },
+          { label: 'Appointments', href: '#' },
+          { label: 'Reports', href: '/dashboard/reports' },
+          { label: 'About', href: '#' },
+          { label: 'Contact', href: '#' },
+        ]
       : [];
 
   return (
@@ -47,13 +51,13 @@ export default function Navbar({ user, onLogout }) {
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((l) => (
-                <a
-                  key={l}
-                  href="#"
+                <Link
+                  key={l.label}
+                  href={l.href}
                   className="text-sm text-gray-600 hover:text-blue-700 font-medium"
                 >
-                  {l}
-                </a>
+                  {l.label}
+                </Link>
               ))}
               <button
                 onClick={handleLogout}
@@ -111,13 +115,14 @@ export default function Navbar({ user, onLogout }) {
       {open && user.role === 'patient' && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-3">
           {navLinks.map((l) => (
-            <a
-              key={l}
-              href="#"
+            <Link
+              key={l.label}
+              href={l.href}
+              onClick={() => setOpen(false)}
               className="block text-sm text-gray-700 font-medium py-1"
             >
-              {l}
-            </a>
+              {l.label}
+            </Link>
           ))}
           <button
             onClick={handleLogout}
