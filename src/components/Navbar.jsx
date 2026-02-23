@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -56,20 +57,15 @@ export default function Navbar({ user, onLogout }) {
             href={user ? "/dashboard" : "/"}
             className="flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shrink-0 shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 3v14M3 10h14"
-                  stroke="white"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span className="font-extrabold text-blue-700 text-xl tracking-tight">
-              Sahaj Swasthya
-            </span>
-          </Link>
+            <div className="w-30 my-auto h-16 bg-white backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto">
+                        <Image
+                          src={'/logo.png'}
+                          alt="logo"
+                          fill
+                          className="text-white object-contain"
+                        />
+                      </div>
+                     </Link>
 
           {/* No user — public nav */}
           {!user && (
