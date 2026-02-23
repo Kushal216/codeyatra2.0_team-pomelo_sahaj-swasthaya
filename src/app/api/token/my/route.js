@@ -31,11 +31,17 @@ export async function GET(req) {
 
     const allStatus = searchParams.get('allStatus') === 'true';
 
-    const statusFilter = allStatus ? {} : { status: { $nin: ['Completed', 'Cancelled'] } };
+    if (allStatus) {
+      const tokens = await QueueToken.find({ userId: resolvedId })
+        .populate('department', 'name')
+        .populate('doctor', 'name specialization')
+        .sort({ createdAt: -1 });
+      return NextResponse.json({ success: true, tokens });
+    }
 
     const token = await QueueToken.findOne({
       userId: resolvedId,
-      ...statusFilter,
+      status: { $nin: ['Completed', 'Cancelled'] },
     })
       .populate('department', 'name')
       .populate('doctor', 'name specialization')
