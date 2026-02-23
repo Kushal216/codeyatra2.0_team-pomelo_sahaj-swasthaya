@@ -1,29 +1,56 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pill, Stethoscope, FileText, Syringe } from 'lucide-react';
+import { Pill, Stethoscope, FileText, Syringe, RefreshCw } from 'lucide-react';
+
+const POLL_INTERVAL = 30_000; // 30 seconds
 
 function PatientDashboard({ user }) {
   const [tokenData, setTokenData] = useState(null);
   const [loadingToken, setLoadingToken] = useState(true);
+  const [tokenError, setTokenError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const intervalRef = useRef(null);
   const router = useRouter();
 
-  const fetchToken = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/token/my?userId=${user._id}`);
-      const data = await res.json();
-      if (data.success && data.token) {
-        setTokenData(data.token);
-      }
-    } catch (error) {
-      console.error('Failed to fetch token:', error);
-    } finally {
-      setLoadingToken(false);
-    }
-  }, [user._id]);
+  const userId = String(user._id);
 
+  const fetchToken = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setLoadingToken(true);
+      else setRefreshing(true);
+      setTokenError(null);
+
+      try {
+        const res = await fetch(`/api/token/my?userId=${user.email}`);
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        const data = await res.json();
+
+        if (data.success) {
+          setTokenData(data.token ?? null);
+        } else {
+          throw new Error(data.error || 'Failed to fetch token');
+        }
+      } catch (error) {
+        console.error('Failed to fetch token:', error);
+        setTokenError(error.message);
+      } finally {
+        setLoadingToken(false);
+        setRefreshing(false);
+      }
+    },
+    [userId]
+  );
+
+  // Initial fetch + polling
   useEffect(() => {
     fetchToken();
+
+    intervalRef.current = setInterval(() => {
+      fetchToken({ silent: true });
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(intervalRef.current);
   }, [fetchToken]);
 
   return (
@@ -62,12 +89,33 @@ function PatientDashboard({ user }) {
 
       {/* Active Token */}
       <div>
-        <h3 className="text-base font-semibold text-gray-800 mb-3">
-          Active Token
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-gray-800">
+            Active Token
+          </h3>
+          <button
+            onClick={() => fetchToken({ silent: true })}
+            disabled={refreshing || loadingToken}
+            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-40"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+
         {loadingToken ? (
           <div className="card text-center py-8 text-gray-400 text-sm">
             Loading...
+          </div>
+        ) : tokenError ? (
+          <div className="card text-center py-8 space-y-2">
+            <p className="text-sm text-red-500">{tokenError}</p>
+            <button
+              onClick={() => fetchToken()}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Try again
+            </button>
           </div>
         ) : tokenData ? (
           <div className="card border-l-4 border-l-blue-600 space-y-3">

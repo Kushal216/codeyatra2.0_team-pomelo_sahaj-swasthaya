@@ -36,7 +36,13 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       token,
-      user: { name: user.name, role: user.role },
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
