@@ -54,23 +54,25 @@ export default function ActiveTokenSection({ userId }) {
     setConfirmOpen(false);
     try {
       const res = await fetch(`/api/token/${tokenData._id}`, {
-        method: 'DELETE',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Cancelled' }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setTokenData(null);
         setToast({
-          message: 'Appointment successfully removed.',
+          message: 'Appointment cancelled successfully.',
           type: 'success',
         });
       } else {
         setToast({
-          message: data.error || 'Failed to remove appointment.',
+          message: data.error || 'Failed to cancel appointment.',
           type: 'error',
         });
       }
     } catch {
-      setToast({ message: 'Failed to remove appointment.', type: 'error' });
+      setToast({ message: 'Failed to cancel appointment.', type: 'error' });
     }
   };
 
@@ -116,7 +118,7 @@ export default function ActiveTokenSection({ userId }) {
 
       <ConfirmDialog
         isOpen={confirmOpen}
-        message="Are you sure you want to cancel this appointment? This will permanently remove the token."
+        message="Are you sure you want to cancel this appointment?"
         confirmLabel="Yes, cancel it"
         cancelLabel="Keep appointment"
         danger

@@ -42,8 +42,18 @@ const FILTERS = ['All', 'Completed', 'Cancelled'];
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
@@ -157,18 +167,26 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     if (!user?._id) return;
-    setApptLoading(true);
-    fetch(`/api/token/my?userId=${user._id}&allStatus=true`)
-      .then((r) => r.json())
-      .then((data) => {
+    const load = async () => {
+      setApptLoading(true);
+      setApptError('');
+      try {
+        const r = await fetch(
+          `/api/token/my?userId=${user._id}&allStatus=true`
+        );
+        const data = await r.json();
         if (data.success) {
           setAppointments((data.tokens ?? []).map(tokenToAppt));
         } else {
           setApptError(data.error || 'Failed to load appointments');
         }
-      })
-      .catch(() => setApptError('Failed to load appointments'))
-      .finally(() => setApptLoading(false));
+      } catch {
+        setApptError('Failed to load appointments');
+      } finally {
+        setApptLoading(false);
+      }
+    };
+    load();
   }, [user?._id]);
 
   if (loading || !user) {
