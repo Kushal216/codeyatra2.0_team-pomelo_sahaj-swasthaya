@@ -10,11 +10,20 @@ export async function GET(req) {
     const status = searchParams.get('status');
     const department = searchParams.get('department');
     const doctor = searchParams.get('doctor');
+    const stage = searchParams.get('stage');
+    const date = searchParams.get('date');
 
     const filter = {};
     if (status) filter.status = status;
     if (department) filter.department = department;
     if (doctor) filter.doctor = doctor;
+    if (stage) filter.stage = stage;
+    if (date) {
+      const start = new Date(date);
+      const end = new Date(date);
+      end.setUTCDate(end.getUTCDate() + 1);
+      filter.appointmentTime = { $gte: start, $lt: end };
+    }
 
     const tokens = await QueueToken.find(filter)
       .populate('department', 'name')

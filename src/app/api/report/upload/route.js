@@ -5,20 +5,37 @@ import QueueToken from '@/models/QueueToken';
 import { verifyToken } from '@/lib/auth';
 import { resend } from '@/lib/resend';
 
+export async function GET() {
+  try {
+    await connectDB();
+    const reports = await MedicalReport.find().sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, reports });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(req) {
   const user = verifyToken(req, 'staff');
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     await connectDB();
     const { tokenNumber, reportUrl, department } = await req.json();
 
     // 1. Save Report
-    const report = await MedicalReport.create({ tokenNumber, reportUrl, department });
-    
+    const report = await MedicalReport.create({
+      tokenNumber,
+      reportUrl,
+      department,
+    });
+
     // 2. Find Patient Email via Token
-    const queueToken = await QueueToken.findOne({ tokenNumber }).populate('userId');
-    
+    const queueToken = await QueueToken.findOne({ tokenNumber }).populate(
+      'userId'
+    );
+
     // 3. Send Email Notification
     if (queueToken && queueToken.userId && queueToken.userId.email) {
       await resend.emails.send({

@@ -1,7 +1,7 @@
-'use client';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Pill, Stethoscope, FileText, Syringe, RefreshCw } from 'lucide-react';
+"use client";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Pill, Stethoscope, FileText, Syringe, RefreshCw } from "lucide-react";
 
 const POLL_INTERVAL = 30_000; // 30 seconds
 
@@ -29,17 +29,17 @@ function PatientDashboard({ user }) {
         if (data.success) {
           setTokenData(data.token ?? null);
         } else {
-          throw new Error(data.error || 'Failed to fetch token');
+          throw new Error(data.error || "Failed to fetch token");
         }
       } catch (error) {
-        console.error('Failed to fetch token:', error);
+        console.error("Failed to fetch token:", error);
         setTokenError(error.message);
       } finally {
         setLoadingToken(false);
         setRefreshing(false);
       }
     },
-    [userId]
+    [userId],
   );
 
   // Initial fetch + polling
@@ -53,6 +53,31 @@ function PatientDashboard({ user }) {
     return () => clearInterval(intervalRef.current);
   }, [fetchToken]);
 
+  // Cancel appointment handler
+  const handleCancel = async () => {
+    if (!tokenData) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to cancel this appointment? This will remove all traces of this token.",
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`/api/token/${tokenData._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTokenData(null);
+        alert("Appointment fully removed.");
+      } else {
+        alert(data.error || "Failed to remove appointment.");
+      }
+    } catch (err) {
+      alert("Failed to remove appointment.");
+    }
+  };
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Welcome card */}
@@ -60,7 +85,7 @@ function PatientDashboard({ user }) {
         <p className="text-xs text-gray-400 mb-1">Welcome back</p>
         <h2
           className="text-xl font-semibold text-gray-900"
-          style={{ fontFamily: 'Fraunces,serif' }}
+          style={{ fontFamily: "Fraunces,serif" }}
         >
           {user.name}
         </h2>
@@ -77,19 +102,19 @@ function PatientDashboard({ user }) {
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
         <button
-          onClick={() => router.push('/opd-registration')}
+          onClick={() => router.push("/opd-registration")}
           className="btn-primary flex-1 text-center text-base py-4"
         >
           Book an Appointment
         </button>
         <button
-          onClick={() => router.push('/dashboard/appointments')}
+          onClick={() => router.push("/dashboard/appointments")}
           className="btn-secondary flex-1 text-center"
         >
           My Appointments
         </button>
         <button
-          onClick={() => router.push('/dashboard/reports')}
+          onClick={() => router.push("/dashboard/reports")}
           className="btn-secondary flex-1 text-center"
         >
           View Medical History
@@ -107,8 +132,8 @@ function PatientDashboard({ user }) {
             disabled={refreshing || loadingToken}
             className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-40"
           >
-            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
-            {refreshing ? 'Refreshing...' : 'Refresh'}
+            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
 
@@ -131,10 +156,10 @@ function PatientDashboard({ user }) {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-900">
-                  {tokenData.department?.name || '—'}
+                  {tokenData.department?.name || "—"}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Dr. {tokenData.doctor?.name || '—'}
+                  Dr. {tokenData.doctor?.name || "—"}
                 </p>
                 {tokenData.doctor?.specialization && (
                   <p className="text-xs text-gray-400">
@@ -148,11 +173,11 @@ function PatientDashboard({ user }) {
                 </span>
                 <div
                   className={`mt-1 text-xs px-2 py-0.5 rounded-full font-medium inline-block ${
-                    tokenData.status === 'Waiting'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : tokenData.status === 'InProgress'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-green-100 text-green-700'
+                    tokenData.status === "Waiting"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : tokenData.status === "InProgress"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-green-100 text-green-700"
                   }`}
                 >
                   {tokenData.status}
@@ -170,15 +195,22 @@ function PatientDashboard({ user }) {
                   {tokenData.appointmentTime
                     ? new Date(tokenData.appointmentTime).toLocaleTimeString(
                         [],
-                        { hour: '2-digit', minute: '2-digit' }
+                        { hour: "2-digit", minute: "2-digit" },
                       )
-                    : '—'}
+                    : "—"}
                 </p>
               </div>
             </div>
             <p className="text-xs text-gray-400">
               Issued: {new Date(tokenData.createdAt).toLocaleString()}
             </p>
+            <button
+              onClick={handleCancel}
+              className="btn-danger w-full mt-2"
+              disabled={loadingToken || refreshing}
+            >
+              Cancel Appointment
+            </button>
           </div>
         ) : (
           <div className="card text-center py-8 text-gray-400 text-sm">
@@ -190,10 +222,10 @@ function PatientDashboard({ user }) {
       {/* Health info cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { Icon: Pill, label: 'Active Prescriptions', val: '2' },
-          { Icon: Stethoscope, label: 'Last Visit', val: 'Jan 12' },
-          { Icon: FileText, label: 'Lab Reports', val: '3' },
-          { Icon: Syringe, label: 'Vaccinations', val: 'Up to date' },
+          { Icon: Pill, label: "Active Prescriptions", val: "2" },
+          { Icon: Stethoscope, label: "Last Visit", val: "Jan 12" },
+          { Icon: FileText, label: "Lab Reports", val: "3" },
+          { Icon: Syringe, label: "Vaccinations", val: "Up to date" },
         ].map(({ Icon, label, val }) => (
           <div
             key={label}
