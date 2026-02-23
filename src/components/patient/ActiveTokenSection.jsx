@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import TokenCard from './TokenCard';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import Toast from '@/components/ui/Toast';
 
 const POLL_INTERVAL = 30_000;
 
@@ -10,6 +12,8 @@ export default function ActiveTokenSection({ userId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toast, setToast] = useState(null); // { message, type }
   const intervalRef = useRef(null);
 
   const fetchToken = useCallback(
@@ -41,14 +45,13 @@ export default function ActiveTokenSection({ userId }) {
     return () => clearInterval(intervalRef.current);
   }, [fetchToken]);
 
-  const handleCancel = async () => {
+  const handleCancel = () => {
     if (!tokenData) return;
-    if (
-      !window.confirm(
-        'Are you sure you want to cancel this appointment? This will remove all traces of this token.'
-      )
-    )
-      return;
+    setConfirmOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    setConfirmOpen(false);
     try {
       const res = await fetch(`/api/token/${tokenData._id}`, {
         method: 'DELETE',
@@ -56,12 +59,18 @@ export default function ActiveTokenSection({ userId }) {
       const data = await res.json();
       if (res.ok && data.success) {
         setTokenData(null);
-        alert('Appointment fully removed.');
+        setToast({
+          message: 'Appointment successfully removed.',
+          type: 'success',
+        });
       } else {
-        alert(data.error || 'Failed to remove appointment.');
+        setToast({
+          message: data.error || 'Failed to remove appointment.',
+          type: 'error',
+        });
       }
     } catch {
-      alert('Failed to remove appointment.');
+      setToast({ message: 'Failed to remove appointment.', type: 'error' });
     }
   };
 
@@ -103,6 +112,24 @@ export default function ActiveTokenSection({ userId }) {
         <div className="card text-center py-8 text-gray-400 text-sm">
           No active token. Book an appointment to get started.
         </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        message="Are you sure you want to cancel this appointment? This will permanently remove the token."
+        confirmLabel="Yes, cancel it"
+        cancelLabel="Keep appointment"
+        danger
+        onConfirm={confirmCancel}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

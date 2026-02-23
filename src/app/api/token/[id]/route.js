@@ -6,7 +6,7 @@ import MedicalReport from '@/models/MedicalReport';
 export async function DELETE(req, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const token = await QueueToken.findById(id);
     if (!token) return NextResponse.json({ error: 'Token not found' }, { status: 404 });
     await MedicalReport.deleteMany({ tokenNumber: token.tokenNumber });
