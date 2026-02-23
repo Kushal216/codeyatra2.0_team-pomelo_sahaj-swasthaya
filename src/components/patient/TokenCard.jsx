@@ -15,59 +15,57 @@ function formatTime(dateStr) {
 export default function TokenCard({ token, onCancel, disabled }) {
   return (
     <div className="card border-l-4 border-l-blue-600 space-y-3">
-      {/* Header: dept/doctor on left, token number + status on right */}
+      {/* Header: token number + status */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-semibold text-gray-900">
-            {token.department?.name || '—'}
-          </p>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Dr. {token.doctor?.name || '—'}
-          </p>
-          {token.doctor?.specialization && (
-            <p className="text-xs text-gray-400">
-              {token.doctor.specialization}
-            </p>
-          )}
-        </div>
-        <div className="text-right">
+          <p className="text-xs text-gray-400">Your Token</p>
           <span className="text-2xl font-bold text-blue-700">
             #{token.tokenNumber}
           </span>
-          <div
-            className={`mt-1 text-xs px-2 py-0.5 rounded-full font-medium inline-block ${
-              STATUS_CLASSES[token.status] ?? 'bg-green-100 text-green-700'
-            }`}
-          >
-            {token.status}
-          </div>
+        </div>
+        <div
+          className={`text-xs px-2 py-0.5 rounded-full font-medium self-start mt-1 ${
+            STATUS_CLASSES[token.status] ?? 'bg-green-100 text-green-700'
+          }`}
+        >
+          {token.status}
         </div>
       </div>
 
-      {/* Stage + appointment time */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-400">Stage</p>
-          <p className="font-semibold text-gray-800">{token.stage}</p>
+      {/* Dept · Doctor · Time in one row */}
+      <div className="bg-gray-50 rounded-lg p-3 grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <p className="text-gray-400 mb-0.5">Department</p>
+          <p className="font-semibold text-gray-800 truncate">
+            {token.department?.name || '—'}
+          </p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-400">Appointment Time</p>
+        <div>
+          <p className="text-gray-400 mb-0.5">Doctor</p>
+          <p className="font-semibold text-gray-800 truncate">
+            Dr. {token.doctor?.name || '—'}
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-400 mb-0.5">Time</p>
           <p className="font-semibold text-gray-800">
             {token.appointmentTime ? formatTime(token.appointmentTime) : '—'}
           </p>
         </div>
       </div>
 
-      <p className="text-xs text-gray-400">
-        Issued: {new Date(token.createdAt).toLocaleString()}
-      </p>
-      <button
-        onClick={onCancel}
-        disabled={disabled}
-        className="btn-danger w-full mt-2"
-      >
-        Cancel Appointment
-      </button>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          Issued: {new Date(token.createdAt).toLocaleString()}
+        </p>
+        <button
+          onClick={onCancel}
+          disabled={disabled}
+          className="text-xs text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

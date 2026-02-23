@@ -2,25 +2,103 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context';
+import {
+  Heart,
+  Smile,
+  Eye,
+  Baby,
+  Bone,
+  Microscope,
+  Brain,
+  Users,
+  Ear,
+  Syringe,
+  Stethoscope,
+  FlaskConical,
+  Radiation,
+  PersonStanding,
+  Leaf,
+} from 'lucide-react';
 
 const PAYMENT_METHODS = [
-  { id: 'upi', label: 'UPI / GPay / PhonePe', icon: '📱' },
-  { id: 'card', label: 'Credit / Debit Card', icon: '💳' },
-  { id: 'net', label: 'Net Banking', icon: '🏦' },
-  { id: 'cash', label: 'Cash at Counter', icon: '💵' },
+  {
+    id: 'esewa',
+    label: 'eSewa',
+    sublabel: 'Pay via eSewa wallet',
+    logo: '/payment-icons/esewa.png',
+    logoBg: 'bg-green-50',
+  },
+  {
+    id: 'khalti',
+    label: 'Khalti',
+    sublabel: 'Pay via Khalti wallet',
+    logo: '/payment-icons/khalti.png',
+    logoBg: 'bg-purple-50',
+  },
+  {
+    id: 'visa',
+    label: 'Visa / Mastercard',
+    sublabel: 'Credit or Debit card',
+    logo: '/payment-icons/visa.png',
+    logoBg: 'bg-blue-50',
+  },
+  {
+    id: 'cash',
+    label: 'Cash at Counter',
+    sublabel: 'Pay when you arrive',
+    logo: null,
+    logoBg: 'bg-gray-100',
+  },
 ];
 
+// Lucide icon + colour for each known department name (case-insensitive key lookup)
 const DEPT_ICONS = {
-  Cardiology: '🫀',
-  Dental: '🦷',
-  Ophthalmology: '👁️',
-  Gynaecology: '🌸',
-  Orthopaedics: '🦴',
-  Dermatology: '🩺',
-  Neurology: '🧠',
-  Paediatrics: '🧒',
-  ENT: '👂',
+  cardiology: { Icon: Heart, color: 'text-red-500', bg: 'bg-red-50' },
+  dental: { Icon: Smile, color: 'text-blue-500', bg: 'bg-blue-50' },
+  ophthalmology: { Icon: Eye, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+  gynaecology: { Icon: Leaf, color: 'text-pink-500', bg: 'bg-pink-50' },
+  orthopaedics: { Icon: Bone, color: 'text-amber-600', bg: 'bg-amber-50' },
+  orthopedics: { Icon: Bone, color: 'text-amber-600', bg: 'bg-amber-50' },
+  dermatology: {
+    Icon: PersonStanding,
+    color: 'text-orange-500',
+    bg: 'bg-orange-50',
+  },
+  neurology: { Icon: Brain, color: 'text-purple-600', bg: 'bg-purple-50' },
+  paediatrics: { Icon: Baby, color: 'text-green-500', bg: 'bg-green-50' },
+  pediatrics: { Icon: Baby, color: 'text-green-500', bg: 'bg-green-50' },
+  ent: { Icon: Ear, color: 'text-teal-600', bg: 'bg-teal-50' },
+  oncology: { Icon: Radiation, color: 'text-rose-600', bg: 'bg-rose-50' },
+  pathology: {
+    Icon: FlaskConical,
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-50',
+  },
+  radiology: { Icon: Microscope, color: 'text-sky-600', bg: 'bg-sky-50' },
+  urology: { Icon: Syringe, color: 'text-lime-600', bg: 'bg-lime-50' },
+  general: { Icon: Stethoscope, color: 'text-gray-600', bg: 'bg-gray-100' },
+  medicine: { Icon: Stethoscope, color: 'text-gray-600', bg: 'bg-gray-100' },
+  surgery: { Icon: Syringe, color: 'text-blue-700', bg: 'bg-blue-50' },
+  psychiatry: { Icon: Brain, color: 'text-violet-600', bg: 'bg-violet-50' },
+  geriatrics: { Icon: Users, color: 'text-stone-500', bg: 'bg-stone-50' },
 };
+
+function DeptIcon({ name }) {
+  const key = name?.toLowerCase().split(' ')[0];
+  const match = DEPT_ICONS[key] ?? {
+    Icon: Stethoscope,
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+  };
+  const { Icon, color, bg } = match;
+  return (
+    <div
+      className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-2`}
+    >
+      <Icon size={20} className={color} />
+    </div>
+  );
+}
 
 export default function OPDRegistrationPage() {
   const router = useRouter();
@@ -174,9 +252,7 @@ export default function OPDRegistrationPage() {
                 }}
                 className="card text-left hover:border-blue-300 hover:bg-blue-50 transition-colors"
               >
-                <div className="text-2xl mb-2">
-                  {DEPT_ICONS[d.name] || '🏥'}
-                </div>
+                <DeptIcon name={d.name} />
                 <p className="text-sm font-semibold text-gray-900">{d.name}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{d.description}</p>
               </button>
@@ -416,12 +492,31 @@ export default function OPDRegistrationPage() {
                       : 'hover:border-blue-200'
                   }`}
                 >
-                  <span className="text-xl">{pm.icon}</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {pm.label}
-                  </span>
+                  {/* Logo / icon box */}
+                  <div
+                    className={`w-12 h-10 rounded-lg ${pm.logoBg} flex items-center justify-center flex-shrink-0 overflow-hidden`}
+                  >
+                    {pm.logo ? (
+                      <img
+                        src={pm.logo}
+                        alt={pm.label}
+                        className="w-10 h-8 object-contain"
+                      />
+                    ) : (
+                      <span className="text-xl">💵</span>
+                    )}
+                  </div>
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800">
+                      {pm.label}
+                    </p>
+                    <p className="text-xs text-gray-400">{pm.sublabel}</p>
+                  </div>
                   {payMethod === pm.id && (
-                    <span className="ml-auto text-blue-600 text-sm">✓</span>
+                    <span className="ml-auto text-blue-600 text-sm font-bold">
+                      ✓
+                    </span>
                   )}
                 </button>
               ))}
