@@ -2,19 +2,23 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+const PUBLIC_LINKS = [
+  { label: 'Home', href: '/dashboard' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+];
+
 // ---- Navbar ----
 export default function Navbar({ user, onLogout }) {
   const [open, setOpen] = useState(false);
 
   function handleLogout() {
     setOpen(false);
-    if (typeof onLogout === 'function') {
-      onLogout();
-    }
+    if (typeof onLogout === 'function') onLogout();
   }
 
   const navLinks =
-    user.role === 'patient'
+    user?.role === 'patient'
       ? [
           { label: 'Home', href: '/dashboard' },
           { label: 'Appointments', href: '/dashboard/appointments' },
@@ -22,13 +26,16 @@ export default function Navbar({ user, onLogout }) {
           { label: 'About', href: '/about' },
           { label: 'Contact', href: '/contact' },
         ]
-      : [];
+      : PUBLIC_LINKS;
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-blue-700 rounded-md flex items-center justify-center flex-shrink-0">
+        <Link
+          href={user ? '/dashboard' : '/'}
+          className="flex items-center gap-2"
+        >
+          <div className="w-7 h-7 bg-blue-700 rounded-md flex items-center justify-center shrink-0">
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
               <path
                 d="M10 3v14M3 10h14"
@@ -44,11 +51,32 @@ export default function Navbar({ user, onLogout }) {
           >
             Sahaj Swasthya
           </span>
-        </div>
+        </Link>
 
-        {user.role === 'patient' && (
+        {/* No user — public nav */}
+        {!user && (
+          <nav className="hidden md:flex items-center gap-6">
+            {PUBLIC_LINKS.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="text-sm text-gray-600 hover:text-blue-700 font-medium"
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Link
+              href="/login"
+              className="text-sm text-blue-700 font-medium hover:text-blue-800"
+            >
+              Login
+            </Link>
+          </nav>
+        )}
+
+        {/* Patient nav */}
+        {user?.role === 'patient' && (
           <>
-            {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((l) => (
                 <Link
@@ -66,8 +94,6 @@ export default function Navbar({ user, onLogout }) {
                 Logout
               </button>
             </nav>
-
-            {/* Mobile hamburger */}
             <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
               <svg
                 width="22"
@@ -91,13 +117,18 @@ export default function Navbar({ user, onLogout }) {
           </>
         )}
 
-        {user.role !== 'patient' && (
+        {/* Staff / Admin nav */}
+        {user && user.role !== 'patient' && (
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500 hidden sm:block">
               {user.name}
             </span>
             <span
-              className={`text-xs px-2 py-1 rounded-full font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700'}`}
+              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                user.role === 'admin'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'bg-teal-100 text-teal-700'
+              }`}
             >
               {user.role === 'admin' ? 'Admin' : 'Staff'}
             </span>
@@ -112,7 +143,7 @@ export default function Navbar({ user, onLogout }) {
       </div>
 
       {/* Mobile menu */}
-      {open && user.role === 'patient' && (
+      {open && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-3">
           {navLinks.map((l) => (
             <Link
@@ -124,12 +155,22 @@ export default function Navbar({ user, onLogout }) {
               {l.label}
             </Link>
           ))}
-          <button
-            onClick={handleLogout}
-            className="block text-sm text-red-600 font-medium py-1"
-          >
-            Logout
-          </button>
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="block text-sm text-red-600 font-medium py-1"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="block text-sm text-blue-700 font-medium py-1"
+            >
+              Login
+            </Link>
+          )}
         </div>
       )}
     </header>

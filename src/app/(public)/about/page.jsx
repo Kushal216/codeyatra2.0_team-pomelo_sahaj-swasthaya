@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { useAuth } from '@/lib/context';
+import Navbar from '@/components/Navbar';
 import {
   ClipboardList,
   Clock3,
@@ -7,7 +9,6 @@ import {
   ShieldCheck,
   HeartPulse,
   LayoutDashboard,
-  ChevronLeft,
 } from 'lucide-react';
 
 const PILLARS = [
@@ -63,38 +64,11 @@ const STATS = [
 ];
 
 export default function AboutPage() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="p-2 -ml-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-700 rounded-md flex items-center justify-center flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 3v14M3 10h14"
-                  stroke="white"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span
-              className="font-bold text-blue-700 text-sm"
-              style={{ fontFamily: 'Fraunces,serif' }}
-            >
-              Sahaj Swasthya
-            </span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} onLogout={logout} />
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-12">
         {/* Hero */}
@@ -181,7 +155,7 @@ export default function AboutPage() {
         </section>
 
         {/* Values */}
-        <section className="card border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 text-center space-y-3 py-8">
+        <section className="card border border-blue-200 bg-linear-to-br from-blue-50 to-indigo-50 text-center space-y-3 py-8">
           <h2
             className="text-xl font-semibold text-blue-900"
             style={{ fontFamily: 'Fraunces,serif' }}

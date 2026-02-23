@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/context';
+import Navbar from '@/components/Navbar';
 import {
   Phone,
   Mail,
   MapPin,
   Clock3,
-  ChevronLeft,
   Stethoscope,
   Send,
   CheckCircle2,
@@ -69,6 +70,7 @@ const DOCTORS = [
 ];
 
 export default function ContactPage() {
+  const { user, logout } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
@@ -79,36 +81,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="p-2 -ml-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-700 rounded-md flex items-center justify-center flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 3v14M3 10h14"
-                  stroke="white"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span
-              className="font-bold text-blue-700 text-sm"
-              style={{ fontFamily: 'Fraunces,serif' }}
-            >
-              Sahaj Swasthya
-            </span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} onLogout={logout} />
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-10">
         {/* Page title */}
@@ -138,16 +111,13 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-start gap-3">
-              <MapPin
-                size={16}
-                className="text-blue-600 mt-0.5 flex-shrink-0"
-              />
+              <MapPin size={16} className="text-blue-600 mt-0.5 shrink-0" />
               <span className="text-gray-600 leading-snug">
                 {HOSPITAL.address}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <Phone size={16} className="text-blue-600 flex-shrink-0" />
+              <Phone size={16} className="text-blue-600 shrink-0" />
               <div>
                 <p className="text-gray-800 font-medium">{HOSPITAL.phone}</p>
                 <p className="text-xs text-red-600 font-medium">
@@ -156,7 +126,7 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Mail size={16} className="text-blue-600 flex-shrink-0" />
+              <Mail size={16} className="text-blue-600 shrink-0" />
               <a
                 href={`mailto:${HOSPITAL.email}`}
                 className="text-blue-700 hover:underline break-all"
@@ -165,10 +135,7 @@ export default function ContactPage() {
               </a>
             </div>
             <div className="flex items-start gap-3">
-              <Clock3
-                size={16}
-                className="text-blue-600 mt-0.5 flex-shrink-0"
-              />
+              <Clock3 size={16} className="text-blue-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-gray-600">{HOSPITAL.hours}</p>
                 <p className="text-xs text-green-700 font-medium mt-0.5">
@@ -191,7 +158,7 @@ export default function ContactPage() {
             {DOCTORS.map((doc) => (
               <div key={doc.email} className="card space-y-2.5">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                     <Stethoscope size={16} className="text-blue-700" />
                   </div>
                   <div className="min-w-0">
@@ -205,7 +172,7 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-1.5 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
-                    <Phone size={11} className="flex-shrink-0 text-gray-400" />
+                    <Phone size={11} className="shrink-0 text-gray-400" />
                     <a
                       href={`tel:${doc.phone}`}
                       className="hover:text-blue-600 transition-colors"
@@ -214,7 +181,7 @@ export default function ContactPage() {
                     </a>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Mail size={11} className="flex-shrink-0 text-gray-400" />
+                    <Mail size={11} className="shrink-0 text-gray-400" />
                     <a
                       href={`mailto:${doc.email}`}
                       className="hover:text-blue-600 transition-colors truncate"
@@ -223,7 +190,7 @@ export default function ContactPage() {
                     </a>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock3 size={11} className="flex-shrink-0 text-gray-400" />
+                    <Clock3 size={11} className="shrink-0 text-gray-400" />
                     <span>{doc.hours}</span>
                   </div>
                 </div>
@@ -243,10 +210,7 @@ export default function ContactPage() {
 
           {submitted ? (
             <div className="card border-green-200 bg-green-50 flex items-center gap-3 py-6">
-              <CheckCircle2
-                size={24}
-                className="text-green-600 flex-shrink-0"
-              />
+              <CheckCircle2 size={24} className="text-green-600 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-green-800">
                   Message sent!
