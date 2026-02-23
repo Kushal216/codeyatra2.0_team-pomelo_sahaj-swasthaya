@@ -1,41 +1,57 @@
 'use client';
-import React, { useState } from 'react';
-import TicketModal from '@/components/TicketModal';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pill, Stethoscope, FileText, Syringe } from 'lucide-react';
+import { Pill, Stethoscope, FileText, Syringe, RefreshCw } from 'lucide-react';
 
-const MOCK_APPOINTMENTS = [
-  {
-    id: 'APT001',
-    dept: 'Cardiology',
-    doctor: 'Dr. Meena Rao',
-    date: '2026-02-25',
-    time: '10:30 AM',
-    token: 'C-14',
-    status: 'Confirmed',
-  },
-  {
-    id: 'APT002',
-    dept: 'Ophthalmology',
-    doctor: 'Dr. Ajay Sen',
-    date: '2026-03-02',
-    time: '11:00 AM',
-    token: 'O-07',
-    status: 'Confirmed',
-  },
-];
+const POLL_INTERVAL = 30_000; // 30 seconds
+
 function PatientDashboard({ user }) {
-  const [selectedApt, setSelectedApt] = useState({
-    id: 'APT001',
-    dept: 'Cardiology',
-    doctor: 'Dr. Meena Rao',
-    date: '2026-02-25',
-    time: '10:30 AM',
-    token: 'C-14',
-    status: 'Confirmed',
-  });
-
+  const [tokenData, setTokenData] = useState(null);
+  const [loadingToken, setLoadingToken] = useState(true);
+  const [tokenError, setTokenError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const intervalRef = useRef(null);
   const router = useRouter();
+
+  const userId = String(user._id);
+
+  const fetchToken = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setLoadingToken(true);
+      else setRefreshing(true);
+      setTokenError(null);
+
+      try {
+        const res = await fetch(`/api/token/my?userId=${userId}`);
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        const data = await res.json();
+
+        if (data.success) {
+          setTokenData(data.token ?? null);
+        } else {
+          throw new Error(data.error || 'Failed to fetch token');
+        }
+      } catch (error) {
+        console.error('Failed to fetch token:', error);
+        setTokenError(error.message);
+      } finally {
+        setLoadingToken(false);
+        setRefreshing(false);
+      }
+    },
+    [userId]
+  );
+
+  // Initial fetch + polling
+  useEffect(() => {
+    fetchToken();
+
+    intervalRef.current = setInterval(() => {
+      fetchToken({ silent: true });
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(intervalRef.current);
+  }, [fetchToken]);
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
@@ -50,19 +66,12 @@ function PatientDashboard({ user }) {
         </h2>
         <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
           <span>
-            ID: <strong className="text-gray-800">{user.id}</strong>
+            ID: <strong className="text-gray-800">{user._id}</strong>
           </span>
           <span>
             Phone: <strong className="text-gray-800">{user.phone}</strong>
           </span>
-          {user.insuranceId && (
-            <span>
-              Insurance:{' '}
-              <strong className="text-gray-800">{user.insuranceId}</strong>
-            </span>
-          )}
         </div>
-        <p className="mt-1 text-xs text-gray-400">{user.address}</p>
       </div>
 
       {/* CTA Buttons */}
@@ -78,47 +87,78 @@ function PatientDashboard({ user }) {
         </button>
       </div>
 
-      {/* Upcoming Appointments */}
+      {/* Active Token */}
       <div>
-        <h3 className="text-base font-semibold text-gray-800 mb-3">
-          Upcoming Appointments
-        </h3>
-        {MOCK_APPOINTMENTS.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-gray-800">
+            Active Token
+          </h3>
+          <button
+            onClick={() => fetchToken({ silent: true })}
+            disabled={refreshing || loadingToken}
+            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-40"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+
+        {loadingToken ? (
           <div className="card text-center py-8 text-gray-400 text-sm">
-            No appointments scheduled.
+            Loading...
+          </div>
+        ) : tokenError ? (
+          <div className="card text-center py-8 space-y-2">
+            <p className="text-sm text-red-500">{tokenError}</p>
+            <button
+              onClick={() => fetchToken()}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Try again
+            </button>
+          </div>
+        ) : tokenData ? (
+          <div className="card border-l-4 border-l-blue-600 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-blue-700">
+                #{tokenData.tokenNumber}
+              </span>
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  tokenData.status === 'Waiting'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : tokenData.status === 'InProgress'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-green-100 text-green-700'
+                }`}
+              >
+                {tokenData.status}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-400">Stage</p>
+                <p className="font-semibold text-gray-800">{tokenData.stage}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-400">Appointment Time</p>
+                <p className="font-semibold text-gray-800">
+                  {tokenData.appointmentTime
+                    ? new Date(tokenData.appointmentTime).toLocaleTimeString(
+                        [],
+                        { hour: '2-digit', minute: '2-digit' }
+                      )
+                    : '—'}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              Issued: {new Date(tokenData.createdAt).toLocaleString()}
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {MOCK_APPOINTMENTS.map((apt) => (
-              <button
-                key={apt.id}
-                onClick={() => setSelectedApt(apt)}
-                className="card w-full text-left hover:border-blue-300 hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">
-                      {apt.dept}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">{apt.doctor}</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {apt.date} · {apt.time}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                      {apt.status}
-                    </span>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Token: {apt.token}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-blue-600 mt-2 font-medium">
-                  Tap to view ticket →
-                </p>
-              </button>
-            ))}
+          <div className="card text-center py-8 text-gray-400 text-sm">
+            No active token. Book an appointment to get started.
           </div>
         )}
       </div>
@@ -141,10 +181,6 @@ function PatientDashboard({ user }) {
           </div>
         ))}
       </div>
-
-      {/* {selectedApt && (
-        <TicketModal apt={selectedApt} onClose={() => setSelectedApt(null)} />
-      )} */}
     </main>
   );
 }

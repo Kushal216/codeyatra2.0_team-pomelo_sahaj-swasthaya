@@ -1,14 +1,17 @@
 "use client"
 // import { useRouter } from 'next/router';
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 // ---- Navbar ----
-export default function Navbar({ user }) {
+export default function Navbar({ user, onLogout }) {
   const [open, setOpen] = useState(false);
   // const router = useRouter();
 
   function handleLogout() {
-    logout();
+    setOpen(false);
+    if (typeof onLogout === 'function') {
+      onLogout();
+    }
     // router.push('/login');
   }
 
@@ -127,4 +130,3 @@ export default function Navbar({ user }) {
     </header>
   );
 }
-

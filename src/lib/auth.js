@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 export function verifyToken(req, requiredRole) {
+  
   const authHeader = req.headers.get('authorization');
   // if (!authHeader) return null;
 
