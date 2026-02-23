@@ -1,5 +1,6 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from 'react';
+import StatsGrid from '@/components/admin/StatsGrid';
 
 /* Small reusable card for statistics */
 function StatCard({ label, value }) {
@@ -29,20 +30,20 @@ function AdminDashboard({ user }) {
     patientsToday: 0,
     activeDoctors: 0,
     openDepartments: 0,
-    bedsOccupied: "0 / 0",
+    bedsOccupied: '0 / 0',
     pendingReports: 0,
     revenueToday: 0,
     departmentLoad: [],
   });
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Fetch dashboard statistics on mount
   useEffect(() => {
     async function fetchStats() {
       try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toISOString().split('T')[0];
 
         // Patients waiting today
         const queueRes = await fetch(`/api/token?status=Waiting`);
@@ -92,7 +93,7 @@ function AdminDashboard({ user }) {
           patientsToday,
           activeDoctors,
           openDepartments,
-          bedsOccupied: "62 / 80", // Static for now
+          bedsOccupied: '62 / 80', // Static for now
           pendingReports,
           revenueToday,
           departmentLoad,
@@ -126,7 +127,6 @@ function AdminDashboard({ user }) {
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
       {/* Admin header */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <p className="text-xs text-gray-400 uppercase tracking-wide">
@@ -135,9 +135,7 @@ function AdminDashboard({ user }) {
         <h2 className="text-2xl font-semibold text-gray-900 mt-1">
           {user.name}
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          System Administrator
-        </p>
+        <p className="text-sm text-gray-500 mt-1">System Administrator</p>
       </div>
 
       <StatsGrid stats={stats} />
@@ -166,9 +164,9 @@ function AdminDashboard({ user }) {
             const pct = Math.min(Math.round((d.load / MAX) * 100), 100);
 
             // Color based on load percentage
-            let color = "bg-green-500";
-            if (pct >= 70) color = "bg-red-500";
-            else if (pct >= 40) color = "bg-yellow-500";
+            let color = 'bg-green-500';
+            if (pct >= 70) color = 'bg-red-500';
+            else if (pct >= 40) color = 'bg-yellow-500';
 
             return (
               <div
@@ -176,12 +174,8 @@ function AdminDashboard({ user }) {
                 className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
               >
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-gray-800">
-                    {d.dept}
-                  </span>
-                  <span className="text-gray-500">
-                    {d.load} waiting
-                  </span>
+                  <span className="font-medium text-gray-800">{d.dept}</span>
+                  <span className="text-gray-500">{d.load} waiting</span>
                 </div>
 
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -195,7 +189,6 @@ function AdminDashboard({ user }) {
           })}
         </div>
       </div>
-
     </main>
   );
 }
