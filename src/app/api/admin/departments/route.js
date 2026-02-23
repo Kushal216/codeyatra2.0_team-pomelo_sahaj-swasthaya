@@ -18,7 +18,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   const user = verifyToken(req, 'admin');
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return NextResponse.json({ error: 'Unauthorized'}, { status: 401 });
 
   try {
     await connectDB();
