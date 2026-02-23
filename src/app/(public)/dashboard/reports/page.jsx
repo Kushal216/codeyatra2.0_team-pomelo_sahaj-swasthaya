@@ -12,13 +12,6 @@ export default function ReportsPage() {
   const [loadingData, setLoadingData] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) router.push('/login');
-    if (user) {
-      fetchData();
-    }
-  }, [user, loading]);
-
   const fetchData = async () => {
     try {
       // Fetch prescriptions
@@ -35,6 +28,13 @@ export default function ReportsPage() {
     }
     setLoadingData(false);
   };
+
+  useEffect(() => {
+    if (!loading && !user) router.push('/login');
+    if (user) {
+      fetchData();
+    }
+  }, [user, loading, fetchData]);
 
   const handleDownload = async (item) => {
     // Simulate download
