@@ -99,9 +99,7 @@ export default function Register() {
                 type="text"
                 placeholder="Enter your full name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
@@ -121,9 +119,7 @@ export default function Register() {
                 type="email"
                 placeholder="your.email@example.com"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
@@ -143,9 +139,7 @@ export default function Register() {
                 type="text"
                 placeholder="+977 9XXXXXXXXX"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
               />
             </div>
@@ -165,9 +159,7 @@ export default function Register() {
                 type="password"
                 placeholder="Create a strong password"
                 value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>
@@ -187,9 +179,7 @@ export default function Register() {
                 type="password"
                 placeholder="Re-enter your password"
                 value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
               />
             </div>
@@ -198,8 +188,7 @@ export default function Register() {
           {/* NID Input (Previously Insurance) */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              National ID (NID) Number{' '}
-              <span className="text-gray-400 font-normal">(Optional)</span>
+              National ID (NID) Number <span className="text-gray-400 font-normal">(Optional)</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -210,9 +199,7 @@ export default function Register() {
                 type="text"
                 placeholder="NID Number (if applicable)"
                 value={formData.insured}
-                onChange={(e) =>
-                  setFormData({ ...formData, insured: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, insured: e.target.value })}
               />
             </div>
           </div>
@@ -228,22 +215,13 @@ export default function Register() {
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
               />
             </div>
-            <label
-              htmlFor="terms"
-              className="text-sm text-gray-600 leading-relaxed cursor-pointer select-none"
-            >
-              I agree to the{' '}
-              <Link
-                href="/terms"
-                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline"
-              >
+            <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed cursor-pointer select-none">
+              I agree to the{" "}
+              <Link href="/terms" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
                 Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link
-                href="/privacy"
-                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline"
-              >
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
                 Privacy Policy
               </Link>
             </label>
@@ -252,8 +230,8 @@ export default function Register() {
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-base py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-              loading || !agreeToTerms ? 'opacity-50 cursor-not-allowed' : ''
+            className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-base py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+              loading || !agreeToTerms ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={loading || !agreeToTerms}
           >
@@ -263,14 +241,14 @@ export default function Register() {
                 Registering...
               </>
             ) : (
-              'Create Account'
+              "Create Account"
             )}
           </button>
 
           {/* Login Link */}
           <div className="text-center pt-2">
             <p className="text-base text-gray-600">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link
                 href="/login"
                 className="text-blue-600 hover:text-blue-700 font-semibold hover:underline"
