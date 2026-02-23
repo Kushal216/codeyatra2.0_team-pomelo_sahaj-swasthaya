@@ -1,254 +1,323 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context';
 import Navbar from '@/components/Navbar';
-import {
-  FlaskConical,
-  ScanLine,
-  ClipboardList,
-  Download,
-  Clock,
-  CheckCircle,
-  ChevronLeft,
-} from 'lucide-react';
-import { MOCK_REPORTS } from './mockReports';
+import { ChevronLeft, CalendarDays, Stethoscope, Clock, CheckCircle2 } from 'lucide-react';
 
-const TYPE_CONFIG = {
-  Lab: {
-    Icon: FlaskConical,
-    bg: 'bg-blue-50',
-    text: 'text-blue-700',
-    badge: 'bg-blue-100 text-blue-700',
-  },
-  Radiology: {
-    Icon: ScanLine,
-    bg: 'bg-purple-50',
-    text: 'text-purple-700',
-    badge: 'bg-purple-100 text-purple-700',
-  },
-  Prescription: {
-    Icon: ClipboardList,
-    bg: 'bg-teal-50',
-    text: 'text-teal-700',
-    badge: 'bg-teal-100 text-teal-700',
-  },
-};
-
-const REPORT_FILTERS = ['All', 'Lab', 'Radiology'];
-
-const PRESCRIPTIONS = MOCK_REPORTS.filter((r) => r.type === 'Prescription');
-const REPORTS = MOCK_REPORTS.filter((r) => r.type !== 'Prescription');
-
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-  return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
-
-function RecordCard({ report }) {
-  const config = TYPE_CONFIG[report.type] ?? TYPE_CONFIG.Lab;
-  const { Icon } = config;
-  const isAvailable = report.status === 'Available';
-
-  return (
-    <div className={`bg-white rounded-2xl shadow-sm border p-6 hover:shadow-md transition-shadow duration-200 ${isAvailable ? 'border-gray-100' : 'border-yellow-200 bg-yellow-50/40'}`}>
-      {/* Header */}
-      <div className="flex items-start gap-4 mb-4">
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ring-2 ${config.bg.replace('50', '100')}`}>
-          <Icon size={24} className={config.text} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-lg font-bold text-gray-900 leading-tight">
-            {report.title}
-          </p>
-          <p className="text-base text-gray-600 mt-1">
-            {report.doctor} · <span className="text-gray-400">{report.department}</span>
-          </p>
-        </div>
-        <span className={`shrink-0 text-sm px-3.5 py-1.5 rounded-full font-semibold ${config.badge}`}>
-          {report.type}
-        </span>
-      </div>
-
-      {/* Summary */}
-      <p className="text-base text-gray-700 leading-relaxed mb-5">
-        {report.summary}
-      </p>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2">
-          {isAvailable ? (
-            <CheckCircle size={18} className="text-green-500" />
-          ) : (
-            <Clock size={18} className="text-yellow-500" />
-          )}
-          <span className={`text-base font-semibold ${isAvailable ? 'text-green-600' : 'text-yellow-600'}`}>
-            {isAvailable ? 'Available' : 'Pending'}
-          </span>
-          <span className="text-gray-300 text-lg">·</span>
-          <span className="text-base text-gray-500 font-medium">{formatDate(report.date)}</span>
-        </div>
-        <button
-          disabled={!isAvailable}
-          className={`flex items-center gap-2 text-base font-semibold px-4 py-2.5 rounded-xl border transition-all duration-200 ${
-            isAvailable
-              ? 'text-blue-700 border-blue-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-sm'
-              : 'text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50'
-          }`}
-        >
-          <Download size={18} />
-          Download
-        </button>
-      </div>
-    </div>
+const useIsClient = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
   );
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
 }
 
-export default function ReportsPage() {
+const STEPS = ['Department', 'Doctor', 'Date & Slot', 'Confirm'];
+
+export default function OpdRegistrationPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
-  const [mainTab, setMainTab] = useState('prescriptions');
-  const [reportFilter, setReportFilter] = useState('All');
+  const isClient = useIsClient();
+
+  const [step, setStep] = useState(0);
+
+  // Data
+  const [departments, setDepartments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [slots, setSlots] = useState([]);
+
+  // Selections
+  const [selectedDept, setSelectedDept] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(todayStr());
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
+  // UI state
+  const [deptLoading, setDeptLoading] = useState(false);
+  const [doctorLoading, setDoctorLoading] = useState(false);
+  const [slotLoading, setSlotLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
   }, [loading, user, router]);
 
-  if (loading || !user) {
+  // Load departments on mount
+  useEffect(() => {
+    if (!isClient) return;
+    setDeptLoading(true);
+    fetch('/api/departments')
+      .then((r) => r.json())
+      .then((d) => setDepartments(d.departments ?? []))
+      .catch(() => setError('Failed to load departments'))
+      .finally(() => setDeptLoading(false));
+  }, [isClient]);
+
+  // Load doctors when dept changes
+  useEffect(() => {
+    if (!selectedDept) return;
+    setDoctors([]);
+    setSelectedDoctor(null);
+    setDoctorLoading(true);
+    fetch(`/api/doctors?department=${selectedDept._id}`)
+      .then((r) => r.json())
+      .then((d) => setDoctors(d.doctors ?? []))
+      .catch(() => setError('Failed to load doctors'))
+      .finally(() => setDoctorLoading(false));
+  }, [selectedDept]);
+
+  // Load slots when doctor or date changes
+  useEffect(() => {
+    if (!selectedDoctor || !selectedDate) return;
+    setSlots([]);
+    setSelectedSlot(null);
+    setSlotLoading(true);
+    fetch(`/api/slots?doctorId=${selectedDoctor._id}&date=${selectedDate}`)
+      .then((r) => r.json())
+      .then((d) => setSlots(d.slots ?? []))
+      .catch(() => setError('Failed to load slots'))
+      .finally(() => setSlotLoading(false));
+  }, [selectedDoctor, selectedDate]);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: user.name,
+          phone: user.phone ?? '',
+          userId: user._id,
+          appointmentTime: selectedSlot.time,
+          department: selectedDept._id,
+          doctor: selectedDoctor._id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Booking failed');
+      setSuccess(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isClient || loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-14 w-14 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Loading medical records...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600" />
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar user={user} onLogout={logout} />
+        <div className="max-w-md mx-auto px-4 py-24 text-center space-y-5">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 size={32} className="text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Appointment Booked!</h2>
+          <p className="text-gray-500 text-sm">
+            Your slot with <span className="font-medium text-gray-700">Dr. {selectedDoctor.name}</span> at{' '}
+            <span className="font-medium text-gray-700">{selectedSlot.display}</span> on{' '}
+            <span className="font-medium text-gray-700">{selectedDate}</span> has been confirmed.
+          </p>
+          <button onClick={() => router.push('/dashboard')} className="btn-primary w-full">
+            Back to Dashboard
+          </button>
         </div>
       </div>
     );
   }
 
-  const filteredReports =
-    reportFilter === 'All'
-      ? REPORTS
-      : REPORTS.filter((r) => r.type === reportFilter);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Navbar user={user} onLogout={logout} />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        
-        {/* Page header */}
-        <div className="flex items-center gap-4">
+      <main className="max-w-2xl mx-auto px-4 py-10 space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push('/dashboard')}
-            className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors -ml-1"
-            aria-label="Back to dashboard"
+            onClick={() => (step > 0 ? setStep(step - 1) : router.push('/dashboard'))}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 -ml-1"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </button>
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              Medical Records
-            </h1>
-            <p className="text-base text-gray-600 mt-1.5 font-medium">
-              Your prescriptions, lab results, and imaging reports
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Book Appointment</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Step {step + 1} of {STEPS.length} — {STEPS[step]}</p>
           </div>
         </div>
 
-        {/* Main tabs - Enhanced */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1.5 inline-flex">
-          {[
-            { key: 'prescriptions', label: 'Prescriptions', count: PRESCRIPTIONS.length },
-            { key: 'reports', label: 'Reports', count: REPORTS.length },
-          ].map(({ key, label, count }) => (
-            <button
-              key={key}
-              onClick={() => setMainTab(key)}
-              className={`px-6 py-3 rounded-xl text-base font-bold transition-all duration-200 flex items-center gap-2 ${
-                mainTab === key
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        {/* Progress bar */}
+        <div className="flex gap-1.5">
+          {STEPS.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                i <= step ? 'bg-blue-600' : 'bg-gray-200'
               }`}
-            >
-              {label}
-              <span className={`text-sm font-semibold px-2 py-0.5 rounded-lg ${
-                mainTab === key ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
-              }`}>
-                {count}
-              </span>
-            </button>
+            />
           ))}
         </div>
 
-        {/* Prescriptions tab */}
-        {mainTab === 'prescriptions' &&
-          (PRESCRIPTIONS.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ClipboardList size={28} className="text-teal-600" />
-              </div>
-              <p className="text-lg font-semibold text-gray-700">No prescriptions on record</p>
-              <p className="text-base text-gray-500 mt-2">Prescriptions will appear here after your appointments</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {PRESCRIPTIONS.map((r) => (
-                <RecordCard key={r.id} report={r} />
-              ))}
-            </div>
-          ))}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+            {error}
+          </div>
+        )}
 
-        {/* Reports tab */}
-        {mainTab === 'reports' && (
-          <div className="space-y-6">
-            {/* Sub-filters - Enhanced */}
-            <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-2 px-2">
-              {REPORT_FILTERS.map((f) => {
-                const count = REPORTS.filter((r) => r.type === f).length;
-                return (
-                  <button
-                    key={f}
-                    onClick={() => setReportFilter(f)}
-                    className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-bold border transition-all duration-200 ${
-                      reportFilter === f
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50'
-                    }`}
-                  >
-                    {f}
-                    {f !== 'All' && (
-                      <span className={`ml-2 text-xs font-semibold ${reportFilter === f ? 'text-blue-100' : 'text-gray-400'}`}>
-                        ({count})
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {filteredReports.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FlaskConical size={28} className="text-blue-600" />
-                </div>
-                <p className="text-lg font-semibold text-gray-700">No reports found</p>
-                <p className="text-base text-gray-500 mt-2">Try selecting a different category or check back later</p>
-              </div>
+        {/* Step 0 — Department */}
+        {step === 0 && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-700">Select a department</p>
+            {deptLoading ? (
+              <div className="text-sm text-gray-400 py-8 text-center">Loading departments…</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {filteredReports.map((r) => (
-                  <RecordCard key={r.id} report={r} />
-                ))}
-              </div>
+              departments.map((d) => (
+                <button
+                  key={d._id}
+                  onClick={() => { setSelectedDept(d); setStep(1); }}
+                  className="w-full card text-left flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Stethoscope size={18} className="text-blue-700" />
+                  </div>
+                  <span className="font-medium text-gray-800">{d.name}</span>
+                </button>
+              ))
             )}
+          </div>
+        )}
+
+        {/* Step 1 — Doctor */}
+        {step === 1 && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-700">
+              Select a doctor in <span className="text-blue-700">{selectedDept?.name}</span>
+            </p>
+            {doctorLoading ? (
+              <div className="text-sm text-gray-400 py-8 text-center">Loading doctors…</div>
+            ) : doctors.length === 0 ? (
+              <div className="card text-center py-10 text-gray-400 text-sm">No doctors available in this department.</div>
+            ) : (
+              doctors.map((d) => (
+                <button
+                  key={d._id}
+                  onClick={() => { setSelectedDoctor(d); setStep(2); }}
+                  className="w-full card text-left flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
+                    <span className="text-teal-700 font-bold text-sm">Dr</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-800">Dr. {d.name}</p>
+                    {d.specialization && <p className="text-xs text-gray-400">{d.specialization}</p>}
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Step 2 — Date & Slot */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="label">Date</label>
+              <input
+                type="date"
+                className="input"
+                value={selectedDate}
+                min={todayStr()}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="label">Available Slots</p>
+              {slotLoading ? (
+                <div className="text-sm text-gray-400 py-6 text-center">Loading slots…</div>
+              ) : slots.length === 0 ? (
+                <div className="card text-center py-8 text-gray-400 text-sm">No slots found for this date.</div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {slots.map((s) => (
+                    <button
+                      key={s.time}
+                      disabled={!s.available}
+                      onClick={() => setSelectedSlot(s)}
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                        selectedSlot?.time === s.time
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : s.available
+                          ? 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                          : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                      }`}
+                    >
+                      <Clock size={11} className="inline mr-1 -mt-0.5" />
+                      {s.display}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              disabled={!selectedSlot}
+              onClick={() => setStep(3)}
+              className="btn-primary w-full disabled:opacity-40"
+            >
+              Continue
+            </button>
+          </div>
+        )}
+
+        {/* Step 3 — Confirm */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <div className="card space-y-4">
+              <h3 className="font-semibold text-gray-800">Booking Summary</h3>
+              {[
+                { label: 'Patient', value: user.name },
+                { label: 'Department', value: selectedDept?.name },
+                { label: 'Doctor', value: `Dr. ${selectedDoctor?.name}` },
+                { label: 'Date', value: selectedDate },
+                { label: 'Time', value: selectedSlot?.display },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex justify-between text-sm">
+                  <span className="text-gray-500">{label}</span>
+                  <span className="font-medium text-gray-800">{value}</span>
+                </div>
+              ))}
+              <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
+                <span className="text-gray-500">Consultation Fee</span>
+                <span className="font-semibold text-blue-700">₹200</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="btn-primary w-full disabled:opacity-60"
+            >
+              {submitting ? 'Booking…' : 'Confirm Appointment'}
+            </button>
           </div>
         )}
       </main>
     </div>
   );
 }
+
