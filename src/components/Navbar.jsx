@@ -150,13 +150,13 @@ export default function Navbar({ user, onLogout }) {
                   </div>
                   <div className="text-right">
                     <p className="text-base font-semibold text-gray-900 leading-tight">{user.name}</p>
-                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-lg ${
+                    {/* <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-lg ${
                       user.role === "admin"
                         ? "bg-purple-100 text-purple-700"
                         : "bg-teal-100 text-teal-700"
                     }`}>
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
 
