@@ -1,4 +1,3 @@
-"use client";
 import AddDepartmentForm from "@/components/dashboard/AddDepartmentForm";
 
 export default function DepartmentsPage() {

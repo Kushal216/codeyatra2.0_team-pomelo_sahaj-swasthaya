@@ -2,7 +2,7 @@
 
 import { Resend } from 'resend';
 import ReactDOMServer from 'react-dom/server';
-import EmailTemplate from '@/components/EmailTamplete';
+import EmailTemplate from '@/components/EmailTemplete';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
