@@ -39,8 +39,18 @@ const REPORT_FILTERS = ['All', 'Lab', 'Radiology'];
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
@@ -70,10 +80,14 @@ function RecordCard({ report }) {
   };
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border p-6 hover:shadow-md transition-shadow duration-200 ${isAvailable ? 'border-gray-100' : 'border-yellow-200 bg-yellow-50/40'}`}>
+    <div
+      className={`bg-white rounded-2xl shadow-sm border p-6 hover:shadow-md transition-shadow duration-200 ${isAvailable ? 'border-gray-100' : 'border-yellow-200 bg-yellow-50/40'}`}
+    >
       {/* Header */}
       <div className="flex items-start gap-4 mb-4">
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ring-2 ${config.bg.replace('50', '100')}`}>
+        <div
+          className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ring-2 ${config.bg.replace('50', '100')}`}
+        >
           <Icon size={24} className={config.text} />
         </div>
         <div className="flex-1 min-w-0">
@@ -81,10 +95,13 @@ function RecordCard({ report }) {
             {report.title}
           </p>
           <p className="text-base text-gray-600 mt-1">
-            {report.doctor} · <span className="text-gray-400">{report.department}</span>
+            {report.doctor} ·{' '}
+            <span className="text-gray-400">{report.department}</span>
           </p>
         </div>
-        <span className={`shrink-0 text-sm px-3.5 py-1.5 rounded-full font-semibold ${config.badge}`}>
+        <span
+          className={`shrink-0 text-sm px-3.5 py-1.5 rounded-full font-semibold ${config.badge}`}
+        >
           {report.type}
         </span>
       </div>
@@ -102,11 +119,15 @@ function RecordCard({ report }) {
           ) : (
             <Clock size={18} className="text-yellow-500" />
           )}
-          <span className={`text-base font-semibold ${isAvailable ? 'text-green-600' : 'text-yellow-600'}`}>
+          <span
+            className={`text-base font-semibold ${isAvailable ? 'text-green-600' : 'text-yellow-600'}`}
+          >
             {isAvailable ? 'Available' : 'Pending'}
           </span>
           <span className="text-gray-300 text-lg">·</span>
-          <span className="text-base text-gray-500 font-medium">{formatDate(report.date)}</span>
+          <span className="text-base text-gray-500 font-medium">
+            {formatDate(report.date)}
+          </span>
         </div>
         <button
           disabled={!isAvailable}
@@ -139,16 +160,16 @@ export default function ReportsPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user?._id) {
       fetchReports();
     }
-  }, [user]);
+  }, [user?._id]);
 
   const fetchReports = async () => {
     try {
       setLoadingData(true);
       setError(null);
-      const response = await fetch('/api/report');
+      const response = await fetch(`/api/report?userId=${user._id}`);
       if (!response.ok) throw new Error('Failed to fetch reports');
       const data = await response.json();
       setReports(data.reports || []);
@@ -173,7 +194,9 @@ export default function ReportsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-14 w-14 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Loading medical records...</p>
+          <p className="text-gray-700 font-semibold text-lg">
+            Loading medical records...
+          </p>
         </div>
       </div>
     );
@@ -184,7 +207,9 @@ export default function ReportsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-14 w-14 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Fetching your records...</p>
+          <p className="text-gray-700 font-semibold text-lg">
+            Fetching your records...
+          </p>
         </div>
       </div>
     );
@@ -195,7 +220,6 @@ export default function ReportsPage() {
       <Navbar user={user} onLogout={logout} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        
         {/* Page header */}
         <div className="flex items-center gap-4">
           <button
@@ -223,7 +247,9 @@ export default function ReportsPage() {
                 <Clock size={20} className="text-red-600" />
               </div>
               <div>
-                <p className="text-base font-semibold text-red-800">Unable to load records</p>
+                <p className="text-base font-semibold text-red-800">
+                  Unable to load records
+                </p>
                 <p className="text-base text-red-600 mt-1">{error}</p>
                 <button
                   onClick={fetchReports}
@@ -239,7 +265,11 @@ export default function ReportsPage() {
         {/* Main tabs - Enhanced */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1.5 inline-flex">
           {[
-            { key: 'prescriptions', label: 'Prescriptions', count: PRESCRIPTIONS.length },
+            {
+              key: 'prescriptions',
+              label: 'Prescriptions',
+              count: PRESCRIPTIONS.length,
+            },
             { key: 'reports', label: 'Reports', count: REPORTS.length },
           ].map(({ key, label, count }) => (
             <button
@@ -252,9 +282,13 @@ export default function ReportsPage() {
               }`}
             >
               {label}
-              <span className={`text-sm font-semibold px-2 py-0.5 rounded-lg ${
-                mainTab === key ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
-              }`}>
+              <span
+                className={`text-sm font-semibold px-2 py-0.5 rounded-lg ${
+                  mainTab === key
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
                 {count}
               </span>
             </button>
@@ -268,8 +302,12 @@ export default function ReportsPage() {
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ClipboardList size={28} className="text-teal-600" />
               </div>
-              <p className="text-lg font-semibold text-gray-700">No prescriptions on record</p>
-              <p className="text-base text-gray-500 mt-2">Prescriptions will appear here after your appointments</p>
+              <p className="text-lg font-semibold text-gray-700">
+                No prescriptions on record
+              </p>
+              <p className="text-base text-gray-500 mt-2">
+                Prescriptions will appear here after your appointments
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -298,7 +336,9 @@ export default function ReportsPage() {
                   >
                     {f}
                     {f !== 'All' && (
-                      <span className={`ml-2 text-xs font-semibold ${reportFilter === f ? 'text-blue-100' : 'text-gray-400'}`}>
+                      <span
+                        className={`ml-2 text-xs font-semibold ${reportFilter === f ? 'text-blue-100' : 'text-gray-400'}`}
+                      >
                         ({count})
                       </span>
                     )}
@@ -312,8 +352,12 @@ export default function ReportsPage() {
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FlaskConical size={28} className="text-blue-600" />
                 </div>
-                <p className="text-lg font-semibold text-gray-700">No reports found</p>
-                <p className="text-base text-gray-500 mt-2">Try selecting a different category or check back later</p>
+                <p className="text-lg font-semibold text-gray-700">
+                  No reports found
+                </p>
+                <p className="text-base text-gray-500 mt-2">
+                  Try selecting a different category or check back later
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

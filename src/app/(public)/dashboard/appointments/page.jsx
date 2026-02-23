@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context';
 import Navbar from '@/components/Navbar';
@@ -42,8 +42,18 @@ const FILTERS = ['All', 'Completed', 'Cancelled'];
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
@@ -93,12 +103,16 @@ function AppointmentCard({ appt }) {
           </p>
           <p className="text-base text-gray-600 mt-1">
             {appt.doctor}
-            {appt.specialization && <span className="text-gray-400"> · {appt.specialization}</span>}
+            {appt.specialization && (
+              <span className="text-gray-400"> · {appt.specialization}</span>
+            )}
           </p>
         </div>
 
         {/* Status badge */}
-        <span className={`flex-shrink-0 flex items-center gap-1.5 text-sm px-3.5 py-1.5 rounded-full font-semibold ${cfg.badge}`}>
+        <span
+          className={`flex-shrink-0 flex items-center gap-1.5 text-sm px-3.5 py-1.5 rounded-full font-semibold ${cfg.badge}`}
+        >
           <StatusIcon size={14} />
           {appt.status}
         </span>
@@ -107,16 +121,26 @@ function AppointmentCard({ appt }) {
       {/* Date / time / token row */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="bg-gray-50 rounded-xl p-4 text-center">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">Date</p>
-          <p className="text-base font-bold text-gray-900">{formatDate(appt.date)}</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">
+            Date
+          </p>
+          <p className="text-base font-bold text-gray-900">
+            {formatDate(appt.date)}
+          </p>
         </div>
         <div className="bg-gray-50 rounded-xl p-4 text-center">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">Time</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">
+            Time
+          </p>
           <p className="text-base font-bold text-gray-900">{appt.time}</p>
         </div>
         <div className="bg-gray-50 rounded-xl p-4 text-center">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">Token</p>
-          <p className="text-base font-bold text-blue-700">#{appt.tokenNumber}</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">
+            Token
+          </p>
+          <p className="text-base font-bold text-blue-700">
+            #{appt.tokenNumber}
+          </p>
         </div>
       </div>
 
@@ -141,9 +165,17 @@ function AppointmentCard({ appt }) {
   );
 }
 
+const useIsClient = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
 export default function AppointmentsPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+  const isClient = useIsClient();
   const [activeFilter, setActiveFilter] = useState('All');
   const [appointments, setAppointments] = useState([]);
   const [apptLoading, setApptLoading] = useState(true);
@@ -177,12 +209,14 @@ export default function AppointmentsPage() {
     load();
   }, [user?._id]);
 
-  if (loading || !user) {
+  if (!isClient || loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-14 w-14 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-semibold text-lg">Loading appointments...</p>
+          <p className="text-gray-700 font-semibold text-lg">
+            Loading appointments...
+          </p>
         </div>
       </div>
     );
@@ -205,7 +239,6 @@ export default function AppointmentsPage() {
       <Navbar user={user} onLogout={logout} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        
         {/* Page header */}
         <div className="flex items-center gap-4">
           <button
@@ -238,9 +271,11 @@ export default function AppointmentsPage() {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-center hover:shadow-md transition-shadow">
             <p className="text-3xl font-extrabold text-gray-900 tracking-tight">
-              {MOCK_APPOINTMENTS.length}
+              {appointments.length}
             </p>
-            <p className="text-sm font-medium text-gray-500 mt-2">Total Visits</p>
+            <p className="text-sm font-medium text-gray-500 mt-2">
+              Total Visits
+            </p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-center hover:shadow-md transition-shadow">
             <p className="text-3xl font-extrabold text-green-600 tracking-tight">
@@ -259,13 +294,15 @@ export default function AppointmentsPage() {
         {/* Past appointments section */}
         <div>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900">Past Appointments</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              Past Appointments
+            </h2>
           </div>
 
           {/* Filter tabs - Enhanced */}
           <div className="flex gap-2.5 overflow-x-auto pb-2 mb-6 -mx-2 px-2">
             {FILTERS.map((f) => {
-              const count = MOCK_APPOINTMENTS.filter((a) => a.status === f).length;
+              const count = appointments.filter((a) => a.status === f).length;
               return (
                 <button
                   key={f}
@@ -278,7 +315,9 @@ export default function AppointmentsPage() {
                 >
                   {f}
                   {f !== 'All' && (
-                    <span className={`ml-2 text-xs font-semibold ${activeFilter === f ? 'text-blue-100' : 'text-gray-400'}`}>
+                    <span
+                      className={`ml-2 text-xs font-semibold ${activeFilter === f ? 'text-blue-100' : 'text-gray-400'}`}
+                    >
                       ({count})
                     </span>
                   )}
@@ -292,8 +331,12 @@ export default function AppointmentsPage() {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CalendarDays size={28} className="text-gray-400" />
               </div>
-              <p className="text-lg font-semibold text-gray-700">No appointments found</p>
-              <p className="text-base text-gray-500 mt-2">Try selecting a different filter or book a new appointment</p>
+              <p className="text-lg font-semibold text-gray-700">
+                No appointments found
+              </p>
+              <p className="text-base text-gray-500 mt-2">
+                Try selecting a different filter or book a new appointment
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
