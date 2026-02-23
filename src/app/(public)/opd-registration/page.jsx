@@ -1,689 +1,426 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/context';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-const PAYMENT_METHODS = [
-  { id: 'upi', label: 'UPI / GPay / PhonePe', icon: '📱' },
-  { id: 'card', label: 'Credit / Debit Card', icon: '💳' },
-  { id: 'net', label: 'Net Banking', icon: '🏦' },
-  { id: 'cash', label: 'Cash at Counter', icon: '💵' },
-];
-
-const DEPT_ICONS = {
-  Cardiology: '🫀',
-  Dental: '🦷',
-  Ophthalmology: '👁️',
-  Gynaecology: '🌸',
-  Orthopaedics: '🦴',
-  Dermatology: '🩺',
-  Neurology: '🧠',
-  Paediatrics: '🧒',
-  ENT: '👂',
-};
-
-export default function OPDRegistrationPage() {
-  const router = useRouter();
-  const [step, setStep] = useState('dept');
+export default function BookAppointmentPage() {
   const { user, loading } = useAuth();
-
-  // API data
+  const [step, setStep] = useState(1);
   const [departments, setDepartments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [slots, setSlots] = useState([]);
-  const [loadingDepts, setLoadingDepts] = useState(true);
-  const [loadingDoctors, setLoadingDoctors] = useState(false);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-
-  // Selections
-  const [dept, setDept] = useState(null);
-  const [doctor, setDoctor] = useState(null);
-  const [slot, setSlot] = useState(null);
-  const [details, setDetails] = useState({
-    symptoms: '',
-    duration: '',
-    severity: 'Mild',
-    history: '',
-    allergies: '',
-  });
-  const [payMethod, setPayMethod] = useState('');
-  const [ticketNo, setTicketNo] = useState(null);
+  const [selectedDept, setSelectedDept] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [loadingData, setLoadingData] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingError, setBookingError] = useState('');
+  const router = useRouter();
 
-  // Auth guard
   useEffect(() => {
     if (!loading && !user) router.push('/login');
-  }, [loading, router, user]);
-
-  // Load departments on mount
-  useEffect(() => {
-    async function fetchDepts() {
-      try {
-        const res = await fetch('/api/departments');
-        const data = await res.json();
-        if (data.success) setDepartments(data.departments);
-      } catch (err) {
-        console.error('Failed to fetch departments:', err);
-      } finally {
-        setLoadingDepts(false);
-      }
+    if (user) {
+      fetchDepartments();
     }
-    fetchDepts();
-  }, []);
+  }, [user, loading]);
 
-  // Load doctors when dept changes
-  useEffect(() => {
-    if (!dept) return;
-    setDoctors([]);
-    setDoctor(null);
-    setSlots([]);
-    setSlot(null);
-    setLoadingDoctors(true);
-    async function fetchDoctors() {
-      try {
-        const res = await fetch(`/api/doctors?department=${dept._id}`);
-        const data = await res.json();
-        if (data.success) setDoctors(data.doctors);
-      } catch (err) {
-        console.error('Failed to fetch doctors:', err);
-      } finally {
-        setLoadingDoctors(false);
-      }
+  const fetchDepartments = async () => {
+    try {
+      const res = await fetch('/api/departments');
+      const data = await res.json();
+      if (data.departments) setDepartments(data.departments);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
     }
-    fetchDoctors();
-  }, [dept]);
+    setLoadingData(false);
+  };
 
-  // Load slots when doctor changes
-  useEffect(() => {
-    if (!doctor) return;
-    setSlots([]);
-    setSlot(null);
-    setLoadingSlots(true);
-    const today = new Date().toISOString().split('T')[0];
-    async function fetchSlots() {
-      try {
-        const res = await fetch(
-          `/api/slots?doctorId=${doctor._id}&date=${today}`
-        );
-        const data = await res.json();
-        if (data.success) setSlots(data.slots);
-      } catch (err) {
-        console.error('Failed to fetch slots:', err);
-      } finally {
-        setLoadingSlots(false);
-      }
+  const fetchDoctors = async (deptId) => {
+    try {
+      const res = await fetch(`/api/doctors?department=${deptId}`);
+      const data = await res.json();
+      if (data.doctors) setDoctors(data.doctors);
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
     }
-    fetchSlots();
-  }, [doctor]);
+  };
 
-  async function handlePayment() {
+  const fetchSlots = async (doctorId) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/slots?date=${today}&doctorId=${doctorId}`);
+      const data = await res.json();
+      if (data.slots) setSlots(data.slots);
+    } catch (error) {
+      console.error('Error fetching slots:', error);
+    }
+  };
+
+  const handleDeptSelect = (dept) => {
+    setSelectedDept(dept);
+    fetchDoctors(dept._id);
+    setStep(2);
+  };
+
+  const handleDoctorSelect = (doctor) => {
+    setSelectedDoctor(doctor);
+    fetchSlots(doctor._id);
+    setStep(3);
+  };
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot);
+    setStep(4);
+  };
+
+  const handleBooking = async () => {
+    if (!selectedSlot || !selectedDoctor || !selectedDept) return;
+    
     setBookingLoading(true);
-    setBookingError('');
     try {
       const res = await fetch('/api/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           patientName: user.name,
-          phone: user.phone || '',
+          phone: user.phone,
           userId: user._id,
-          appointmentTime: slot.time,
-          department: dept._id,
-          doctor: doctor._id,
+          appointmentTime: selectedSlot.time,
+          department: selectedDept._id,
+          doctor: selectedDoctor._id
         }),
       });
+      
       const data = await res.json();
-      if (!res.ok) {
-        setBookingError(data.error || 'Booking failed. Please try again.');
-        return;
+      if (data.success) {
+        alert('Appointment booked successfully!');
+        router.push('/dashboard');
+      } else {
+        alert(data.error || 'Failed to book appointment');
       }
-      setTicketNo('OPD-' + String(data.token.tokenNumber).padStart(4, '0'));
-      setStep('success');
-    } catch (err) {
-      setBookingError('Network error. Please try again.');
-    } finally {
-      setBookingLoading(false);
+    } catch (error) {
+      alert('Error booking appointment');
     }
+    setBookingLoading(false);
+  };
+
+  const getDepartmentIcon = (name) => {
+    const icons = {
+      'Orthopedics': '🦴',
+      'Pediatrics': '👶',
+      'Radiology': '📡',
+      'Neurology': '🧠',
+      'Eye': '👁️',
+      'Cardiology': '❤️',
+      'Dermatology': '',
+      'ENT': '👂',
+      'General': '🏥'
+    };
+    return icons[name] || '🏥';
+  };
+
+  if (loading || loadingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!user) return null;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="bg-blue-600 text-white px-3 py-1.5 rounded-lg font-bold text-lg">
+                🏥 Sahaj Swasthya
+              </div>
+            </Link>
 
-  // Step 1: Department
-  if (step === 'dept')
-    return (
-      <PageWrapper onBack={() => router.push('/dashboard')}>
-        <StepHeader
-          activeStep={step}
-          step="dept"
-          title="Select Department"
-          subtitle="Choose the specialty you need"
-        />
-        {loadingDepts ? (
-          <p className="text-sm text-gray-400 text-center py-8">
-            Loading departments...
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {departments.map((d) => (
-              <button
-                key={d._id}
-                onClick={() => {
-                  setDept(d);
-                  setStep('slot');
-                }}
-                className="card text-left hover:border-blue-300 hover:bg-blue-50 transition-colors"
-              >
-                <div className="text-2xl mb-2">
-                  {DEPT_ICONS[d.name] || '🏥'}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium">Dashboard</Link>
+              <Link href="/dashboard/appointments" className="text-gray-700 hover:text-blue-600 font-medium">Appointments</Link>
+              <Link href="/dashboard/reports" className="text-gray-700 hover:text-blue-600 font-medium">Reports</Link>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Link href="/logout" className="text-red-600 hover:text-red-700 font-medium px-4 py-2">
+                Logout
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">OPD Registration</h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center">
+            {[1, 2, 3, 4].map((s) => (
+              <div key={s} className="flex items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition ${
+                  s <= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {s < step ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    s
+                  )}
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{d.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{d.description}</p>
-              </button>
+                {s < 4 && (
+                  <div className={`w-16 md:w-24 h-1 mx-2 transition ${
+                    s < step ? 'bg-blue-600' : 'bg-gray-200'
+                  }`} />
+                )}
+              </div>
             ))}
           </div>
-        )}
-      </PageWrapper>
-    );
+          <div className="flex justify-between mt-2 text-xs text-gray-600 px-4">
+            <span>Department</span>
+            <span>Doctor</span>
+            <span>Time Slot</span>
+            <span>Confirm</span>
+          </div>
+        </div>
 
-  // Step 2: Doctor + Slot
-  if (step === 'slot')
-    return (
-      <PageWrapper onBack={() => setStep('dept')}>
-        <StepHeader
-          activeStep={step}
-          step="slot"
-          title={dept.name}
-          subtitle="Select a doctor and time slot"
-        />
-
-        <div className="space-y-5">
-          <div>
-            <p className="label">Available Doctors</p>
-            {loadingDoctors ? (
-              <p className="text-sm text-gray-400">Loading doctors...</p>
-            ) : doctors.length === 0 ? (
-              <p className="text-sm text-gray-400">
-                No doctors available for this department.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {doctors.map((d) => (
+        {/* Step Content */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+          
+          {/* Step 1: Select Department */}
+          {step === 1 && (
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Select Department</h2>
+              <p className="text-gray-600 mb-6">Choose the specialty you need</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {departments.map((dept) => (
                   <button
-                    key={d._id}
-                    onClick={() => setDoctor(d)}
-                    className={`w-full card text-left transition-colors ${doctor?._id === d._id ? 'border-blue-700 bg-blue-50' : 'hover:border-blue-200'}`}
+                    key={dept._id}
+                    onClick={() => handleDeptSelect(dept)}
+                    className="bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-xl p-6 text-left transition group"
                   >
-                    <p className="text-sm font-semibold text-gray-900">
-                      {d.name}
-                    </p>
-                    <p className="text-xs text-gray-400">{d.specialization}</p>
-                    {doctor?._id === d._id && (
-                      <p className="text-xs text-blue-600 mt-1 font-medium">
-                        ✓ Selected
-                      </p>
-                    )}
+                    <div className="text-4xl mb-3">{getDepartmentIcon(dept.name)}</div>
+                    <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-700">{dept.name}</h3>
+                    <p className="text-sm text-gray-600">{dept.description || 'Medical care and treatment'}</p>
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {doctor && (
+          {/* Step 2: Select Doctor */}
+          {step === 2 && (
             <div>
-              <p className="label">Available Slots — Today</p>
-              {loadingSlots ? (
-                <p className="text-sm text-gray-400">Loading slots...</p>
-              ) : slots.length === 0 ? (
-                <p className="text-sm text-gray-400">
-                  No slots available for today.
-                </p>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {slots.map((s) => (
+              <div className="flex items-center gap-2 mb-6">
+                <button 
+                  onClick={() => setStep(1)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                >
+                  ← Back
+                </button>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Select Doctor</h2>
+              <p className="text-gray-600 mb-6">Choose from our specialists in {selectedDept?.name}</p>
+              
+              <div className="space-y-4">
+                {doctors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">No doctors available in this department</p>
+                  </div>
+                ) : (
+                  doctors.map((doctor) => (
                     <button
-                      key={s.time}
-                      disabled={!s.available}
-                      onClick={() => setSlot(s)}
-                      className={`py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
-                        !s.available
-                          ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
-                          : slot?.time === s.time
-                            ? 'bg-blue-700 text-white border-blue-700'
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'
-                      }`}
+                      key={doctor._id}
+                      onClick={() => handleDoctorSelect(doctor)}
+                      className="w-full bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-xl p-6 text-left transition flex items-center gap-4"
                     >
-                      {s.display}
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl">
+                        👨‍⚕️
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-1">Dr. {doctor.name}</h3>
+                        <p className="text-sm text-gray-600">{doctor.specialization || 'General Physician'}</p>
+                        <p className="text-xs text-gray-500 mt-1">{doctor.experience || '5+ years'} experience</p>
+                      </div>
+                      <div className="text-blue-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </button>
-                  ))}
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Select Time Slot */}
+          {step === 3 && (
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <button 
+                  onClick={() => setStep(2)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                >
+                  ← Back
+                </button>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Select Time Slot</h2>
+              <p className="text-gray-600 mb-6">Choose your preferred appointment time</p>
+              
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
+                    👨‍⚕️
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">Dr. {selectedDoctor?.name}</p>
+                    <p className="text-sm text-gray-600">{selectedDoctor?.specialization}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                {slots.filter(s => s.available).map((slot) => (
+                  <button
+                    key={slot.time}
+                    onClick={() => handleSlotSelect(slot)}
+                    className="bg-gray-50 hover:bg-blue-600 hover:text-white border-2 border-gray-200 hover:border-blue-600 rounded-lg p-3 text-center font-medium transition"
+                  >
+                    {slot.display}
+                  </button>
+                ))}
+              </div>
+
+              {slots.filter(s => s.available).length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 mb-2">No slots available today</p>
+                  <p className="text-sm text-gray-500">Please try another date or doctor</p>
                 </div>
               )}
             </div>
           )}
 
-          {doctor && slot && (
-            <button
-              onClick={() => setStep('details')}
-              className="btn-primary w-full"
-            >
-              Continue →
-            </button>
-          )}
-        </div>
-      </PageWrapper>
-    );
-
-  // Step 3: Problem Details
-  if (step === 'details')
-    return (
-      <PageWrapper onBack={() => setStep('slot')}>
-        <StepHeader
-          activeStep={step}
-          step="details"
-          title="Describe your concern"
-          subtitle="Help the doctor prepare for your visit"
-        />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStep('payment');
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="label">Main Symptoms *</label>
-            <textarea
-              className="input resize-none"
-              rows={3}
-              placeholder="Describe what you are experiencing..."
-              value={details.symptoms}
-              onChange={(e) =>
-                setDetails({ ...details, symptoms: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Duration *</label>
-            <input
-              className="input"
-              placeholder="e.g. 3 days, 2 weeks..."
-              value={details.duration}
-              onChange={(e) =>
-                setDetails({ ...details, duration: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Severity</label>
-            <div className="flex gap-2">
-              {['Mild', 'Moderate', 'Severe'].map((s) => (
-                <button
-                  type="button"
-                  key={s}
-                  onClick={() => setDetails({ ...details, severity: s })}
-                  className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                    details.severity === s
-                      ? 'bg-blue-700 text-white border-blue-700'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'
-                  }`}
+          {/* Step 4: Confirmation */}
+          {step === 4 && (
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <button 
+                  onClick={() => setStep(3)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
                 >
-                  {s}
+                  ← Back
                 </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="label">
-              Past Medical History{' '}
-              <span className="text-gray-400 ml-1">(optional)</span>
-            </label>
-            <textarea
-              className="input resize-none"
-              rows={2}
-              placeholder="Any previous diagnoses, surgeries..."
-              value={details.history}
-              onChange={(e) =>
-                setDetails({ ...details, history: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label className="label">
-              Known Allergies{' '}
-              <span className="text-gray-400 ml-1">(optional)</span>
-            </label>
-            <input
-              className="input"
-              placeholder="e.g. Penicillin, dust..."
-              value={details.allergies}
-              onChange={(e) =>
-                setDetails({ ...details, allergies: e.target.value })
-              }
-            />
-          </div>
-          <button type="submit" className="btn-primary w-full">
-            Proceed to Payment →
-          </button>
-        </form>
-      </PageWrapper>
-    );
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Confirm Appointment</h2>
+              <p className="text-gray-600 mb-6">Review your appointment details</p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Department</p>
+                  <p className="font-semibold text-gray-900">{selectedDept?.name}</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Doctor</p>
+                  <p className="font-semibold text-gray-900">Dr. {selectedDoctor?.name}</p>
+                  <p className="text-sm text-gray-600">{selectedDoctor?.specialization}</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-1">Date & Time</p>
+                  <p className="font-semibold text-gray-900">
+                    {new Date(selectedSlot?.time).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                  <p className="text-lg font-bold text-blue-600 mt-1">
+                    {new Date(selectedSlot?.time).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
 
-  // Step 4: Payment
-  if (step === 'payment')
-    return (
-      <PageWrapper onBack={() => setStep('details')}>
-        <StepHeader
-          activeStep={step}
-          step="payment"
-          title="Payment"
-          subtitle="Review and pay registration fee"
-        />
-        <div className="space-y-5">
-          {/* Summary */}
-          <div className="card bg-gray-50 border-gray-200 space-y-2 text-sm">
-            <p className="font-semibold text-gray-800 mb-2">
-              Appointment Summary
-            </p>
-            <SumRow label="Department" val={dept.name} />
-            <SumRow label="Doctor" val={doctor.name} />
-            <SumRow label="Time Slot" val={slot.display} />
-            <SumRow
-              label="Concern"
-              val={
-                details.symptoms.slice(0, 40) +
-                (details.symptoms.length > 40 ? '...' : '')
-              }
-            />
-            <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-semibold text-gray-900">
-              <span>Registration Fee</span>
-              <span className="text-blue-700">₹200</span>
-            </div>
-          </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-semibold">Note:</span> Please arrive 15 minutes before your appointment time. Late arrivals may be subject to rescheduling.
+                  </p>
+                </div>
+              </div>
 
-          {/* Payment methods */}
-          <div>
-            <p className="label">Choose Payment Method</p>
-            <div className="space-y-2">
-              {PAYMENT_METHODS.map((pm) => (
+              <div className="flex gap-4">
                 <button
-                  key={pm.id}
-                  onClick={() => setPayMethod(pm.id)}
-                  className={`w-full card text-left flex items-center gap-3 transition-colors ${
-                    payMethod === pm.id
-                      ? 'border-blue-700 bg-blue-50'
-                      : 'hover:border-blue-200'
-                  }`}
+                  onClick={() => setStep(3)}
+                  className="flex-1 bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold transition"
                 >
-                  <span className="text-xl">{pm.icon}</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {pm.label}
-                  </span>
-                  {payMethod === pm.id && (
-                    <span className="ml-auto text-blue-600 text-sm">✓</span>
+                  Change Slot
+                </button>
+                <button
+                  onClick={handleBooking}
+                  disabled={bookingLoading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                >
+                  {bookingLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Booking...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Confirm Booking
+                    </>
                   )}
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {bookingError && (
-            <p className="text-sm text-red-600 text-center">{bookingError}</p>
-          )}
-          {payMethod && (
-            <button
-              onClick={handlePayment}
-              disabled={bookingLoading}
-              className="btn-primary w-full text-base py-4 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {bookingLoading ? 'Booking...' : 'Pay ₹200 →'}
-            </button>
-          )}
-        </div>
-      </PageWrapper>
-    );
-
-  // Step 5: Success
-  if (step === 'success')
-    return (
-      <PageWrapper onBack={null}>
-        <div className="text-center py-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#16a34a"
-              strokeWidth="2.5"
-            >
-              <path
-                d="M20 6L9 17l-5-5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <h2
-            className="text-2xl font-semibold text-gray-900 mb-1"
-            style={{ fontFamily: 'Fraunces,serif' }}
-          >
-            Booking Confirmed!
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Your appointment has been registered.
-          </p>
-        </div>
-
-        <div className="card border-blue-200 bg-blue-50 text-center">
-          <p className="text-xs text-gray-500 mb-1">Your Ticket Number</p>
-          <p
-            className="text-3xl font-bold text-blue-700 tracking-wider"
-            style={{ fontFamily: 'Fraunces,serif' }}
-          >
-            {ticketNo}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {dept.name} · {doctor.name} · {slot.display}
-          </p>
-        </div>
-
-        {/* QR Code using canvas */}
-        <div className="flex flex-col items-center">
-          <p className="text-xs text-gray-500 mb-3">
-            Show this QR at the reception desk
-          </p>
-          <QRCodeCanvas value={ticketNo} />
-        </div>
-
-        <div className="card text-sm space-y-2">
-          <p className="font-semibold text-gray-800">Instructions</p>
-          <ul className="text-gray-500 space-y-1 text-xs">
-            <li>• Arrive 15 minutes before your scheduled time</li>
-            <li>• Carry a valid photo ID</li>
-            <li>• Bring any previous prescriptions or reports</li>
-            <li>• Show the QR code at the reception for instant check-in</li>
-          </ul>
-        </div>
-
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="btn-primary w-full"
-        >
-          Back to Dashboard
-        </button>
-      </PageWrapper>
-    );
-
-  return null;
-}
-
-function StepHeader({ title, subtitle, step, activeStep }) {
-  const steps = ['dept', 'slot', 'details', 'payment', 'success'];
-  const idx = steps.indexOf(activeStep);
-  return (
-    <div className="mb-6">
-      {activeStep !== 'success' && (
-        <div className="flex items-center gap-1 mb-4">
-          {steps.slice(0, 4).map((st, i) => (
-            <div key={st} className="flex items-center gap-1">
-              <div
-                className={`w-6 h-6 rounded-full text-xs flex items-center justify-center font-medium flex-shrink-0 ${
-                  i < idx
-                    ? 'bg-blue-700 text-white'
-                    : i === idx
-                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-700'
-                      : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                {i + 1}
               </div>
-              {i < 3 && (
-                <div
-                  className={`h-0.5 w-8 flex-shrink-0 ${i < idx ? 'bg-blue-700' : 'bg-gray-200'}`}
-                />
-              )}
             </div>
-          ))}
-        </div>
-      )}
-      <h2
-        className="text-xl font-semibold text-gray-900"
-        style={{ fontFamily: 'Fraunces,serif' }}
-      >
-        {title}
-      </h2>
-      {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
-    </div>
-  );
-}
-
-function SumRow({ label, val }) {
-  return (
-    <div className="flex justify-between gap-2">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium text-gray-800 text-right">{val}</span>
-    </div>
-  );
-}
-
-function PageWrapper({ children, onBack }) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Simple header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-xl mx-auto px-4 h-14 flex items-center gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="text-gray-500 hover:text-gray-700 p-1"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  d="M19 12H5M12 5l-7 7 7 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
           )}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-700 rounded flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 3v14M3 10h14"
-                  stroke="white"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span className="font-semibold text-gray-800 text-sm">
-              OPD Registration
-            </span>
-          </div>
         </div>
-      </header>
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-5">{children}</div>
-    </div>
-  );
-}
 
-// Simple canvas-based QR Code (no external dep needed for proto)
-function QRCodeCanvas({ value }) {
-  // Generate a simple visual QR-like pattern from the value
-  return (
-    <div className="p-4 bg-white border-2 border-gray-200 rounded-xl inline-block">
-      <svg
-        width="160"
-        height="160"
-        viewBox="0 0 160 160"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Finder patterns */}
-        <rect x="10" y="10" width="40" height="40" rx="4" fill="#1d4ed8" />
-        <rect x="16" y="16" width="28" height="28" rx="2" fill="white" />
-        <rect x="22" y="22" width="16" height="16" rx="1" fill="#1d4ed8" />
-
-        <rect x="110" y="10" width="40" height="40" rx="4" fill="#1d4ed8" />
-        <rect x="116" y="16" width="28" height="28" rx="2" fill="white" />
-        <rect x="122" y="22" width="16" height="16" rx="1" fill="#1d4ed8" />
-
-        <rect x="10" y="110" width="40" height="40" rx="4" fill="#1d4ed8" />
-        <rect x="16" y="116" width="28" height="28" rx="2" fill="white" />
-        <rect x="22" y="122" width="16" height="16" rx="1" fill="#1d4ed8" />
-
-        {/* Data dots derived from value string */}
-        {Array.from(value).map((char, i) => {
-          const code = char.charCodeAt(0);
-          const col = (i * 7 + code) % 8;
-          const row = Math.floor(i / 8) % 8;
-          const x = 60 + col * 10;
-          const y = 10 + row * 10;
-          return code % 2 === 0 ? (
-            <rect
-              key={i}
-              x={x}
-              y={y}
-              width="8"
-              height="8"
-              rx="1"
-              fill="#1d4ed8"
-            />
-          ) : null;
-        })}
-
-        {/* Bottom data area */}
-        {Array.from({ length: 24 }, (_, i) => {
-          const seed = (value.charCodeAt(i % value.length) * (i + 3)) % 7;
-          const col = i % 8;
-          const row = Math.floor(i / 8);
-          const x = 60 + col * 10;
-          const y = 90 + row * 10;
-          return seed > 3 ? (
-            <rect
-              key={`b${i}`}
-              x={x}
-              y={y}
-              width="8"
-              height="8"
-              rx="1"
-              fill="#1d4ed8"
-            />
-          ) : null;
-        })}
-      </svg>
-      <p className="text-center text-xs text-gray-500 mt-2 font-mono tracking-wider">
-        {value}
-      </p>
+        {/* Help Section */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Need help?{' '}
+            <Link href="/support" className="text-blue-600 hover:text-blue-700 font-medium">
+              Contact Support
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
