@@ -92,7 +92,12 @@ export default function ContactPage() {
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-blue-700 rounded-md flex items-center justify-center flex-shrink-0">
               <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
-                <path d="M10 3v14M3 10h14" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                <path
+                  d="M10 3v14M3 10h14"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
               </svg>
             </div>
             <span
@@ -106,7 +111,6 @@ export default function ContactPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-10">
-
         {/* Page title */}
         <div>
           <h1
@@ -116,27 +120,39 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Get in touch with our affiliated hospital or reach a doctor directly.
+            Get in touch with our affiliated hospital or reach a doctor
+            directly.
           </p>
         </div>
 
         {/* Hospital info card */}
         <section className="card border-l-4 border-l-blue-700 space-y-4">
           <div>
-            <p className="text-base font-semibold text-gray-900">{HOSPITAL.name}</p>
-            <p className="text-xs text-blue-600 font-medium">{HOSPITAL.tagline}</p>
+            <p className="text-base font-semibold text-gray-900">
+              {HOSPITAL.name}
+            </p>
+            <p className="text-xs text-blue-600 font-medium">
+              {HOSPITAL.tagline}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-start gap-3">
-              <MapPin size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-              <span className="text-gray-600 leading-snug">{HOSPITAL.address}</span>
+              <MapPin
+                size={16}
+                className="text-blue-600 mt-0.5 flex-shrink-0"
+              />
+              <span className="text-gray-600 leading-snug">
+                {HOSPITAL.address}
+              </span>
             </div>
             <div className="flex items-center gap-3">
               <Phone size={16} className="text-blue-600 flex-shrink-0" />
               <div>
                 <p className="text-gray-800 font-medium">{HOSPITAL.phone}</p>
-                <p className="text-xs text-red-600 font-medium">Emergency: {HOSPITAL.emergency}</p>
+                <p className="text-xs text-red-600 font-medium">
+                  Emergency: {HOSPITAL.emergency}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -149,10 +165,15 @@ export default function ContactPage() {
               </a>
             </div>
             <div className="flex items-start gap-3">
-              <Clock3 size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+              <Clock3
+                size={16}
+                className="text-blue-600 mt-0.5 flex-shrink-0"
+              />
               <div>
                 <p className="text-gray-600">{HOSPITAL.hours}</p>
-                <p className="text-xs text-green-700 font-medium mt-0.5">{HOSPITAL.emergency_hours}</p>
+                <p className="text-xs text-green-700 font-medium mt-0.5">
+                  {HOSPITAL.emergency_hours}
+                </p>
               </div>
             </div>
           </div>
@@ -174,14 +195,21 @@ export default function ContactPage() {
                     <Stethoscope size={16} className="text-blue-700" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{doc.name}</p>
-                    <p className="text-xs text-blue-600 font-medium truncate">{doc.dept}</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {doc.name}
+                    </p>
+                    <p className="text-xs text-blue-600 font-medium truncate">
+                      {doc.dept}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-1.5 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
                     <Phone size={11} className="flex-shrink-0 text-gray-400" />
-                    <a href={`tel:${doc.phone}`} className="hover:text-blue-600 transition-colors">
+                    <a
+                      href={`tel:${doc.phone}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
                       {doc.phone}
                     </a>
                   </div>
@@ -215,9 +243,14 @@ export default function ContactPage() {
 
           {submitted ? (
             <div className="card border-green-200 bg-green-50 flex items-center gap-3 py-6">
-              <CheckCircle2 size={24} className="text-green-600 flex-shrink-0" />
+              <CheckCircle2
+                size={24}
+                className="text-green-600 flex-shrink-0"
+              />
               <div>
-                <p className="text-sm font-semibold text-green-800">Message sent!</p>
+                <p className="text-sm font-semibold text-green-800">
+                  Message sent!
+                </p>
                 <p className="text-xs text-green-700 mt-0.5">
                   We&apos;ll get back to you within 1–2 business days.
                 </p>
@@ -243,7 +276,9 @@ export default function ContactPage() {
                     className="input"
                     placeholder="riya@example.com"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -255,11 +290,16 @@ export default function ContactPage() {
                   rows={4}
                   placeholder="How can we help you?"
                   value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, message: e.target.value })
+                  }
                   required
                 />
               </div>
-              <button type="submit" className="btn-primary flex items-center gap-2">
+              <button
+                type="submit"
+                className="btn-primary flex items-center gap-2"
+              >
                 <Send size={14} />
                 Send Message
               </button>
@@ -269,16 +309,17 @@ export default function ContactPage() {
 
         {/* Footer nav */}
         <div className="flex flex-col sm:flex-row gap-3 pb-4">
-          <Link href="/dashboard" className="btn-secondary flex-1 text-center py-3">
+          <Link
+            href="/dashboard"
+            className="btn-secondary flex-1 text-center py-3"
+          >
             Back to Dashboard
           </Link>
           <Link href="/about" className="btn-secondary flex-1 text-center py-3">
             About Us
           </Link>
         </div>
-
       </main>
     </div>
   );
 }
-
