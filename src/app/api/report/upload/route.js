@@ -24,11 +24,14 @@ export async function POST(req) {
     await connectDB();
     const { tokenNumber, reportUrl, department } = await req.json();
 
+    const status = reportUrl ? 'uploaded' : 'pending';
+
     // 1. Save Report
     const report = await MedicalReport.create({
       tokenNumber,
-      reportUrl,
+      reportUrl: reportUrl ?? '',
       department,
+      status,
     });
 
     // 2. Find Patient Email via Token
@@ -36,8 +39,8 @@ export async function POST(req) {
       'userId'
     );
 
-    // 3. Send Email Notification
-    if (queueToken && queueToken.userId && queueToken.userId.email) {
+    // 3. Send Email Notification — only when a URL is available
+    if (reportUrl && queueToken && queueToken.userId && queueToken.userId.email) {
       await resend.emails.send({
         from: 'Sahaj Swasthya <onboarding@resend.dev>',
         to: queueToken.userId.email,

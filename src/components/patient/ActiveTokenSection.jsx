@@ -21,7 +21,9 @@ export default function ActiveTokenSection({ userId }) {
       silent ? setRefreshing(true) : setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/token/my?userId=${userId}&activeList=true`);
+        const res = await fetch(
+          `/api/token/my?userId=${userId}&activeList=true`
+        );
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const data = await res.json();
         if (data.success) setTokens(data.tokens ?? []);
@@ -57,9 +59,15 @@ export default function ActiveTokenSection({ userId }) {
       const data = await res.json();
       if (res.ok && data.success) {
         setTokens((prev) => prev.filter((t) => t._id !== target._id));
-        setToast({ message: 'Appointment cancelled successfully.', type: 'success' });
+        setToast({
+          message: 'Appointment cancelled successfully.',
+          type: 'success',
+        });
       } else {
-        setToast({ message: data.error || 'Failed to cancel appointment.', type: 'error' });
+        setToast({
+          message: data.error || 'Failed to cancel appointment.',
+          type: 'error',
+        });
       }
     } catch {
       setToast({ message: 'Failed to cancel appointment.', type: 'error' });
@@ -88,11 +96,16 @@ export default function ActiveTokenSection({ userId }) {
       </div>
 
       {loading ? (
-        <div className="card text-center py-8 text-gray-400 text-sm">Loading...</div>
+        <div className="card text-center py-8 text-gray-400 text-sm">
+          Loading...
+        </div>
       ) : error ? (
         <div className="card text-center py-8 space-y-2">
           <p className="text-sm text-red-500">{error}</p>
-          <button onClick={() => fetchTokens()} className="text-xs text-blue-600 hover:underline">
+          <button
+            onClick={() => fetchTokens()}
+            className="text-xs text-blue-600 hover:underline"
+          >
             Try again
           </button>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Save, CheckCircle, Search, X } from "lucide-react";
+import { Plus, Trash2, Save, CheckCircle, Search, X, FileText, ClipboardList } from "lucide-react";
 
 // ─── Empty medicine row ───────────────────────────────────────────────────────
 const emptyMedicine = () => ({
@@ -110,12 +110,23 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
   const [looking, setLooking] = useState(false); // token lookup in progress
   const [locked, setLocked] = useState(!!prefill); // doctor/dept locked when auto-filled
 
+  // ── Report request state ────────────────────────────────────────────────────
+  const [includeReport, setIncludeReport] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportForm, setReportForm] = useState({ reportType: '', notes: '' });
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportError, setReportError] = useState('');
+  const [reportCreated, setReportCreated] = useState(false);
+
   // Re-initialise if prefill changes (e.g. different queue row clicked)
   useEffect(() => {
     setForm(emptyForm());
     setLocked(!!prefill);
     setSubmitted(false);
     setError("");
+    setIncludeReport(false);
+    setReportCreated(false);
+    setReportForm({ reportType: '', notes: '' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefill]);
 
@@ -180,6 +191,38 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
     }));
   };
 
+  // ── Report Request Submit ────────────────────────────────────────────────────
+  const handleReportSubmit = async () => {
+    if (!reportForm.reportType) return;
+    if (!form.tokenNumber || !form.department) {
+      setReportError('Please ensure token number and department are filled in before adding a report.');
+      return;
+    }
+    setReportSubmitting(true);
+    setReportError('');
+    try {
+      const res = await fetch('/api/report/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tokenNumber: Number(form.tokenNumber),
+          department: form.department,
+          reportType: reportForm.reportType,
+          notes: reportForm.notes,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success)
+        throw new Error(data.error || 'Failed to create report request');
+      setReportCreated(true);
+      setReportModalOpen(false);
+    } catch (err) {
+      setReportError(err.message);
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -224,6 +267,9 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
             setSubmitted(false);
             setForm(emptyForm());
             setLocked(!!prefill);
+            setIncludeReport(false);
+            setReportCreated(false);
+            setReportForm({ reportType: '', notes: '' });
           }}
           className="btn-primary mt-2"
         >
@@ -235,7 +281,8 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
 
   // ── Form ────────────────────────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit} className="card space-y-5">
+    <>
+      <form onSubmit={handleSubmit} className="card space-y-5">
       <h3 className="text-base font-semibold text-gray-800">
         Write Prescription
       </h3>
@@ -417,6 +464,57 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
         </div>
       </section>
 
+      {/* ── Report Request ─────────────────────────────────────────────── */}
+      <section className="space-y-3 border-t border-gray-100 pt-4">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="includeReport"
+            checked={includeReport}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setIncludeReport(true);
+                setReportModalOpen(true);
+              } else {
+                setIncludeReport(false);
+                setReportCreated(false);
+                setReportForm({ reportType: '', notes: '' });
+              }
+            }}
+            className="w-4 h-4 accent-teal-600 cursor-pointer"
+          />
+          <label
+            htmlFor="includeReport"
+            className="text-sm text-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <FileText size={15} className="text-teal-600" />
+            Include Lab Report Request
+          </label>
+          {reportCreated && (
+            <span className="ml-auto text-xs text-green-600 flex items-center gap-1">
+              <CheckCircle size={13} /> Report request saved
+            </span>
+          )}
+        </div>
+        {reportCreated && (
+          <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-2 flex items-center justify-between text-sm">
+            <div>
+              <p className="font-medium text-gray-800">{reportForm.reportType}</p>
+              {reportForm.notes && (
+                <p className="text-xs text-gray-500 mt-0.5">{reportForm.notes}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setReportModalOpen(true)}
+              className="text-xs text-teal-600 hover:underline ml-4"
+            >
+              Edit
+            </button>
+          </div>
+        )}
+      </section>
+
       {/* ── Submit ─────────────────────────────────────────────────────── */}
       <button
         type="submit"
@@ -427,5 +525,108 @@ export default function PrescriptionForm({ onSuccess, prefill = null }) {
         {submitting ? "Saving…" : "Save Prescription"}
       </button>
     </form>
+
+    {/* ── Report Request Modal ──────────────────────────────────────────── */}
+    {reportModalOpen && (
+      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+              <ClipboardList size={18} className="text-teal-600" />
+              Lab Report Request
+            </h4>
+            <button
+              type="button"
+              onClick={() => {
+                setReportModalOpen(false);
+                if (!reportCreated) setIncludeReport(false);
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg px-3 py-2 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-gray-400">Token #</p>
+              <p className="font-medium">{form.tokenNumber || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Department</p>
+              <p className="font-medium">{form.department || '—'}</p>
+            </div>
+          </div>
+
+          {reportError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {reportError}
+            </p>
+          )}
+
+          <div>
+            <label className="label">Report Type</label>
+            <select
+              value={reportForm.reportType}
+              onChange={(e) =>
+                setReportForm((prev) => ({ ...prev, reportType: e.target.value }))
+              }
+              className="input-field w-full"
+            >
+              <option value="">Select report type…</option>
+              <option>Blood Test (CBC)</option>
+              <option>Blood Test (LFT)</option>
+              <option>Blood Test (KFT)</option>
+              <option>Urine Test</option>
+              <option>X-Ray</option>
+              <option>MRI</option>
+              <option>CT Scan</option>
+              <option>ECG</option>
+              <option>Ultrasound</option>
+              <option>Biopsy</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="label">
+              Clinical Notes{' '}
+              <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea
+              value={reportForm.notes}
+              onChange={(e) =>
+                setReportForm((prev) => ({ ...prev, notes: e.target.value }))
+              }
+              rows={3}
+              placeholder="Any instructions for the lab…"
+              className="input-field w-full resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setReportModalOpen(false);
+                if (!reportCreated) setIncludeReport(false);
+              }}
+              className="flex-1 border border-gray-200 text-gray-600 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleReportSubmit}
+              disabled={reportSubmitting || !reportForm.reportType}
+              className="flex-1 btn-primary disabled:opacity-60"
+            >
+              {reportSubmitting ? 'Adding…' : 'Add Report Request'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
