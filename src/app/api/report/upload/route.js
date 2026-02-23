@@ -40,7 +40,12 @@ export async function POST(req) {
     );
 
     // 3. Send Email Notification — only when a URL is available
-    if (reportUrl && queueToken && queueToken.userId && queueToken.userId.email) {
+    if (
+      reportUrl &&
+      queueToken &&
+      queueToken.userId &&
+      queueToken.userId.email
+    ) {
       await resend.emails.send({
         from: 'Sahaj Swasthya <onboarding@resend.dev>',
         to: queueToken.userId.email,
