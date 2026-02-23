@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { MOCK_APPOINTMENTS } from './mockAppointments';
 
 const STATUS_CONFIG = {
   Completed: {
@@ -47,6 +46,30 @@ function formatDate(dateStr) {
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+function formatTime(dateStr) {
+  const d = new Date(dateStr);
+  let hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+function tokenToAppt(t) {
+  return {
+    id: t._id,
+    department: t.department?.name ?? '—',
+    doctor: t.doctor?.name ? `Dr. ${t.doctor.name}` : '—',
+    specialization: t.doctor?.specialization ?? '',
+    date: t.appointmentTime,
+    time: formatTime(t.appointmentTime),
+    tokenNumber: t.tokenNumber,
+    stage: t.stage,
+    status: t.status,
+    notes: null,
+  };
 }
 
 function AppointmentCard({ appt }) {
@@ -122,10 +145,37 @@ export default function AppointmentsPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('All');
+  const [appointments, setAppointments] = useState([]);
+  const [apptLoading, setApptLoading] = useState(true);
+  const [apptError, setApptError] = useState('');
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    const load = async () => {
+      setApptLoading(true);
+      setApptError('');
+      try {
+        const r = await fetch(
+          `/api/token/my?userId=${user._id}&allStatus=true`
+        );
+        const data = await r.json();
+        if (data.success) {
+          setAppointments((data.tokens ?? []).map(tokenToAppt));
+        } else {
+          setApptError(data.error || 'Failed to load appointments');
+        }
+      } catch {
+        setApptError('Failed to load appointments');
+      } finally {
+        setApptLoading(false);
+      }
+    };
+    load();
+  }, [user?._id]);
 
   if (loading || !user) {
     return (
@@ -140,13 +190,13 @@ export default function AppointmentsPage() {
 
   const filtered =
     activeFilter === 'All'
-      ? MOCK_APPOINTMENTS
-      : MOCK_APPOINTMENTS.filter((a) => a.status === activeFilter);
+      ? appointments
+      : appointments.filter((a) => a.status === activeFilter);
 
-  const completedCount = MOCK_APPOINTMENTS.filter(
+  const completedCount = appointments.filter(
     (a) => a.status === 'Completed'
   ).length;
-  const cancelledCount = MOCK_APPOINTMENTS.filter(
+  const cancelledCount = appointments.filter(
     (a) => a.status === 'Cancelled'
   ).length;
 

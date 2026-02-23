@@ -84,15 +84,20 @@ export async function POST(req) {
       );
     }
 
-    // Prevent duplicate active tokens
+    // Prevent duplicate active tokens in the same department
     if (userId) {
       const activeToken = await QueueToken.findOne({
         userId,
+        department,
         status: { $nin: ['Completed', 'Cancelled'] },
       });
       if (activeToken)
         return NextResponse.json(
-          { error: 'Active token exists', token: activeToken },
+          {
+            error:
+              'You already have an active appointment in this department. Please wait for it to be completed before booking another.',
+            token: activeToken,
+          },
           { status: 400 }
         );
     }
